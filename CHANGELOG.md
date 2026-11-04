@@ -129,8 +129,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Text Size select for text mode.** Text mode is drawn by the panel in whole
+  16px rows, so the select offers 16, 32, 48 and 64 and only the sizes that fit
+  the panel (honouring a height override). It used to take its size from the
+  Font Size number, which accepts 0.5px steps that text mode silently rounded
+  away. On the first start, Text Size is set from that number so nothing
+  changes visually.
+- **Scroll up and Scroll down text effects** (codes 3 and 4). Offered on
+  32x32 panels; on others, turn on *Offer scroll up and scroll down text
+  effects* in the options. They work on the 64x20 panel (Type 133), though
+  pypixelcolor warns they can boot-loop some devices outside 32x32. The
+  `send_text` action lists them too and refuses them while they are off.
+- **Your own fonts in `/config/fonts/`.** Searched before the bundled ones,
+  and kept across HACS updates, which replace the integration's own `fonts/`
+  folder. Reloading the integration picks up newly added fonts.
+
+### Changed
+
+- **The setup picker lists panels only.** It used to list every connectable
+  Bluetooth device nearby, with panels starred among them. It now shows only
+  devices recognised as panels (an `LED_BLE` name, the vendor's manufacturer
+  data, or the panel's service UUID) that are not set up yet, plus **Show all
+  Bluetooth devices** for a panel that advertises unusually, and manual entry.
+- **Font Size is now called Image Font Size**, since it only affects the
+  `textimage` mode. Its entity id is unchanged.
+
 ### Fixed
 
+- **A failed connection during setup now says so.** The picker used to come
+  back with no error message after the panel could not be reached.
 - **The bundled fonts' tuning was ignored in text mode.** Each font in
   `fonts/` ships a JSON file with its size, offset, pixel threshold and
   variable width per character height. pypixelcolor 0.4 read those itself;
@@ -139,12 +168,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   one is drawn at the text height with threshold 70, as under 0.4.
 - Building text commands (font loading and glyph rendering) now runs off the
   event loop.
-
-### Added
-
-- **Your own fonts in `/config/fonts/`.** Searched before the bundled ones,
-  and kept across HACS updates, which replace the integration's own `fonts/`
-  folder. Reloading the integration picks up newly added fonts.
 
 ## [2.3.8] - 2026-11-04
 

@@ -183,9 +183,12 @@ The panel animates text seven ways. Pick one with the **Text Effect** entity —
 Fixed, Scroll left, Scroll right, Blinking, Breathing, Snowflake or Laser — and
 it applies the next time the display refreshes.
 
-Codes 3 and 4 exist but are not offered. `pypixelcolor` refuses them on
-anything but a 32×32 panel because they can put a device into a boot loop, and
-no source names them.
+**Scroll up** and **Scroll down** (codes 3 and 4) are offered on 32×32 panels.
+On other panels they are off unless you turn on *Offer scroll up and scroll
+down text effects* in the integration options. `pypixelcolor` warns that they
+can put some devices into a boot loop outside 32×32, but they work on at least
+the 64×20 panel (Type 133). Turn the option on at your own risk, and turn it
+off again if your panel misbehaves.
 
 ### Text gradients
 
@@ -198,15 +201,20 @@ Spectrum, Navy to blush, Cyan to gold, Blue to cyan, Spectrum vivid, Colour
 wheel, Warm wheel and Warm wheel wide. The gradient number stays in the label
 so nothing rests on our choice of adjectives.
 
-### Font size and line spacing, per mode
+### Text size and line spacing, per mode
 
-These two behave differently depending on the display mode, which is not
-obvious from the entities themselves.
+Each mode has its own size control, because the two modes draw text in
+different places.
 
 | | Mode `textimage` | Mode `text` |
 | --- | --- | --- |
-| **Font Size** | `0` means auto-fit; any value in 0.5 steps is honoured | Whole 16px rows only — the value is capped at the panel height, raised to at least 16, then rounded down to a multiple of 16. On a 32px panel that leaves 16 and 32. `0` becomes 16, so there is no auto-fit. |
+| **Image Font Size** (`number`) | `0` means auto-fit; any value in 0.5 steps is honoured | Not used |
+| **Text Size** (`select`) | Not used | 16, 32, 48 or 64px, only the sizes that fit the panel (just 16 on a 20px panel; 16 and 32 on a 32px one) |
 | **Line Spacing** | Honoured, 0–20px | **No effect.** |
+
+Image Font Size was called Font Size before 2.4 and kept its entity id. On the
+first start after upgrading, Text Size is set from it, so text mode looks the
+same as before.
 
 The reason is where the text is drawn. In `textimage` mode this integration
 renders the text into a picture and sends pixels, so it controls the layout.
@@ -245,7 +253,7 @@ every refresh.
 
 Power the panel on and make sure no phone is connected to it — a panel that is already connected to the vendor app will not advertise, and Home Assistant cannot find it.
 
-Home Assistant usually discovers it by itself and offers it under **Settings → Devices & Services**. Otherwise add it manually: **Add Integration → BLE LED Pixel Display**, then pick your panel from the list. Devices whose name starts with `LED_BLE_` are marked with a star. Manual entry of a MAC address is available as a fallback.
+Home Assistant usually discovers it by itself and offers it under **Settings → Devices & Services**. Otherwise add it manually: **Add Integration → BLE LED Pixel Display**, then pick your panel from the list. The list holds only panels that are not set up yet: devices named `LED_BLE_*`, or carrying the vendor's advertisement data or service UUID. If yours is missing, **Show all Bluetooth devices** lists every connectable device with the panels starred, and manual entry of a MAC address is the last fallback.
 
 ## Entities you get
 
@@ -257,8 +265,10 @@ Home Assistant usually discovers it by itself and offers it under **Settings →
 | **Brightness** | `number` | 1–100 |
 | **Mode** | `select` | `textimage`, `text` or `clock` — see [Display modes](#display-modes) |
 | **Font** | `select` | TTF/OTF fonts, see [Fonts](#fonts) |
-| **Font Size**, **Line Spacing** | `number` | Layout in `textimage` mode |
-| **Text Animation**, **Text Speed**, **Text Rainbow** | `number` | Scrolling and effects in `text` mode |
+| **Image Font Size**, **Line Spacing** | `number` | Layout in `textimage` mode |
+| **Text Size** | `select` | Character height in `text` mode |
+| **Text Effect**, **Text Gradient** | `select` | Scrolling, effects and colour ramps in `text` mode |
+| **Text Speed** | `number` | Effect speed in `text` mode |
 | **Clock Style** | `select` | 9 clock faces |
 | **Clock 24h**, **Clock Show Date** | `switch` | Clock options |
 | **Antialiasing** | `switch` | Smoothing in `textimage` mode |
