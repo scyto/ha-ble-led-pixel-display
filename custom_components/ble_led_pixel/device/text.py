@@ -75,19 +75,39 @@ def resolve_text_font(font: str | None, char_height: int) -> Union[str, Any]:
     path = Path(font)
     if not path.is_file() or _is_builtin_font_file(path):
         return BUILTIN_FONT
-    metrics = _sidecar_metrics(path, char_height) or {}
-    offset = metrics.get("offset", (0, 0))
+    settings = _font_settings(_sidecar_metrics(path, char_height) or {}, char_height, path)
     try:
-        return FontConfig.from_file(
-            path,
-            font_size=int(metrics.get("font_size", char_height)),
-            offset=(int(offset[0]), int(offset[1])),
-            pixel_threshold=int(metrics.get("pixel_threshold", _DEFAULT_PIXEL_THRESHOLD)),
-            var_width=bool(metrics.get("var_width", False)),
-        )
-    except (OSError, ValueError, TypeError, IndexError) as err:
+        return FontConfig.from_file(path, **settings)
+    except (OSError, ValueError, TypeError) as err:
         _LOGGER.warning("Could not load font %s, using %s: %s", font, BUILTIN_FONT, err)
         return BUILTIN_FONT
+
+
+def _font_settings(metrics: dict, char_height: int, path: Path) -> dict[str, Any]:
+    """FontConfig keywords from sidecar metrics; defaults if any are malformed.
+
+    A user's sidecar can be valid JSON and still hold nonsense (an offset of
+    {} or [1]), which must not stop the text from being sent.
+    """
+    defaults = {
+        "font_size": char_height,
+        "offset": (0, 0),
+        "pixel_threshold": _DEFAULT_PIXEL_THRESHOLD,
+        "var_width": False,
+    }
+    try:
+        offset = metrics.get("offset", (0, 0))
+        if not isinstance(offset, (list, tuple)) or len(offset) != 2:
+            raise ValueError(f"offset must be two numbers, got {offset!r}")
+        return {
+            "font_size": int(metrics.get("font_size", char_height)),
+            "offset": (int(offset[0]), int(offset[1])),
+            "pixel_threshold": int(metrics.get("pixel_threshold", _DEFAULT_PIXEL_THRESHOLD)),
+            "var_width": bool(metrics.get("var_width", False)),
+        }
+    except (ValueError, TypeError) as err:
+        _LOGGER.warning("Ignoring invalid font metrics in %s: %s", path.with_suffix(".json"), err)
+        return defaults
 
 
 def make_text_command(

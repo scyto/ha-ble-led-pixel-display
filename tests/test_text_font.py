@@ -50,14 +50,26 @@ def test_font_without_json_gets_defaults(tmp_path):
     assert cfg.pixel_threshold == 70
 
 
-@pytest.mark.parametrize("metrics", ["nope", {"16": "invalid"}])
+@pytest.mark.parametrize(
+    "metrics",
+    [
+        "nope",
+        {"16": "invalid"},
+        {"16": {"font_size": 16, "offset": {}}},
+        {"16": {"font_size": 16, "offset": [1]}},
+        {"16": {"font_size": 16, "offset": ["a", 0]}},
+        {"16": {"font_size": "big", "offset": [0, 0]}},
+    ],
+)
 def test_bad_json_falls_back_to_defaults(tmp_path, metrics):
     font = tmp_path / "Odd.ttf"
     font.write_bytes((FONTS / "5x5.ttf").read_bytes())
     (tmp_path / "Odd.json").write_text(json.dumps({"metrics": metrics}))
     cfg = resolve_text_font(str(font), 16)
+    assert isinstance(cfg, FontConfig)  # the user's font, not the fallback
     assert cfg.pixel_threshold == 70
     assert cfg.font_size == 16
+    assert cfg.offset == (0, 0)
 
 
 @pytest.mark.parametrize(
