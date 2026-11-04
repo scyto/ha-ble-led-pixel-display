@@ -60,3 +60,14 @@ def test_offline_panel_is_checked_from_its_stored_identity():
 
     api = type("Api", (), {"device_info": None, "identity": PanelIdentity("0001", "05", None)})()
     assert unknown_panel.report_info_for(api) == {"cidpid": "000105", "brand": "Generic"}
+
+
+def test_defaults_only_device_info_falls_back_to_stored_identity():
+    from custom_components.ble_led_pixel.advertisement import PanelIdentity
+
+    info = {"width": 64, "height": 16, "cidpid": None, "brand": None}
+    api = type("Api", (), {"device_info": info, "identity": PanelIdentity("0001", "05", None)})()
+    result = unknown_panel.report_info_for(api)
+    assert result["cidpid"] == "000105"
+    assert result["brand"] == "Generic"
+    assert result["width"] == 64

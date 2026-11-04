@@ -52,13 +52,17 @@ def build_report_url(device_info: dict[str, Any], integration_version: str) -> s
 def report_info_for(api) -> dict[str, Any] | None:
     """Device info for the unknown-panel check, even while the panel is offline.
 
-    An offline panel has no device info yet, but its stored identity is
-    enough to raise -- or clear -- the notice.
+    An offline panel has no device info yet, and one whose queries timed out
+    has only defaults, but its stored identity is enough to raise -- or
+    clear -- the notice.
     """
-    if api.device_info is not None:
-        return api.device_info
+    info = api.device_info
+    if info is not None and info.get("cidpid"):
+        return info
+    # No device info, or a defaults-only answer (every query timed out):
+    # take the product id and brand from the stored identity instead.
     identity = api.identity
-    return {"cidpid": identity.cidpid, "brand": identity.brand}
+    return {**(info or {}), "cidpid": identity.cidpid, "brand": identity.brand}
 
 
 async def async_report_unknown_panel(
