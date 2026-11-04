@@ -102,10 +102,16 @@ def _font_settings(metrics: dict, char_height: int, path: Path) -> dict[str, Any
         var_width = metrics.get("var_width", False)
         if not isinstance(var_width, bool):
             raise ValueError(f"var_width must be true or false, got {var_width!r}")
+        font_size = int(metrics.get("font_size", char_height))
+        if font_size < 1:
+            raise ValueError(f"font_size must be positive, got {font_size}")
+        pixel_threshold = int(metrics.get("pixel_threshold", _DEFAULT_PIXEL_THRESHOLD))
+        if not 0 <= pixel_threshold <= 255:
+            raise ValueError(f"pixel_threshold must be 0-255, got {pixel_threshold}")
         return {
-            "font_size": int(metrics.get("font_size", char_height)),
+            "font_size": font_size,
             "offset": (int(offset[0]), int(offset[1])),
-            "pixel_threshold": int(metrics.get("pixel_threshold", _DEFAULT_PIXEL_THRESHOLD)),
+            "pixel_threshold": pixel_threshold,
             "var_width": var_width,
         }
     except (ValueError, TypeError, OverflowError) as err:
