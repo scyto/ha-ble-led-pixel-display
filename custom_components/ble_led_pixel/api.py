@@ -136,6 +136,8 @@ class BleLedPixelAPI:
         # the erase but reaches the send lock after it is dropped instead of
         # leaving the panel non-empty.
         self._slot_epoch = 0
+        # The same per slot, bumped by delete_slot.
+        self._slot_epochs: dict[int, int] = {}
         self._device_info: dict[str, Any] | None = None
         self._device_response: bytes | None = None
 
@@ -449,10 +451,14 @@ class BleLedPixelAPI:
                 _LOGGER.debug("Reconnect task ended with: %s", err)
             self._reconnect_task = None
 
-    def _slot_save_check(self) -> Callable[[], bool]:
-        """A check that no erase of all slots was requested since this call."""
+    def _slot_save_check(self, slot: int) -> Callable[[], bool]:
+        """A check that neither this slot nor all slots were erased since."""
         epoch = self._slot_epoch
-        return lambda: epoch == self._slot_epoch
+        slot_epoch = self._slot_epochs.get(slot, 0)
+        return lambda: (
+            epoch == self._slot_epoch
+            and slot_epoch == self._slot_epochs.get(slot, 0)
+        )
 
     def _claim_content(self) -> Callable[[], bool]:
         """Mark a new display request and return a check that it is still the latest.
@@ -991,8 +997,8 @@ class BleLedPixelAPI:
         still_current = self._claim_content()
         if save_slot >= 1:
             # Saving to a slot is storage, not just display: newer content
-            # does not drop it, only an erase of all slots requested since.
-            still_current = self._slot_save_check()
+            # does not drop it, only an erase of that slot (or all) since.
+            still_current = self._slot_save_check(save_slot)
         try:
             device_info = await self.get_device_info()
             width = device_info["width"]
@@ -1147,8 +1153,8 @@ class BleLedPixelAPI:
         still_current = self._claim_content()
         if save_slot >= 1:
             # Saving to a slot is storage, not just display: newer content
-            # does not drop it, only an erase of all slots requested since.
-            still_current = self._slot_save_check()
+            # does not drop it, only an erase of that slot (or all) since.
+            still_current = self._slot_save_check(save_slot)
         try:
             device_info = await self.get_device_info()
             width = device_info["width"]
@@ -1237,8 +1243,8 @@ class BleLedPixelAPI:
         still_current = self._claim_content()
         if save_slot >= 1:
             # Saving to a slot is storage, not just display: newer content
-            # does not drop it, only an erase of all slots requested since.
-            still_current = self._slot_save_check()
+            # does not drop it, only an erase of that slot (or all) since.
+            still_current = self._slot_save_check(save_slot)
         try:
             path = Path(file_path)
             file_bytes = await self._hass.async_add_executor_job(path.read_bytes)
@@ -1370,6 +1376,8 @@ class BleLedPixelAPI:
         if pypixelcolor_delete is None:
             _LOGGER.error("pypixelcolor is not available")
             return False
+        # A save to this slot still rendering would otherwise land after it.
+        self._slot_epochs[slot] = self._slot_epochs.get(slot, 0) + 1
         try:
             success = await self._bluetooth.send_plan(pypixelcolor_delete(slot))
             if success:
@@ -1534,8 +1542,8 @@ class BleLedPixelAPI:
         still_current = self._claim_content()
         if save_slot >= 1:
             # Saving to a slot is storage, not just display: newer content
-            # does not drop it, only an erase of all slots requested since.
-            still_current = self._slot_save_check()
+            # does not drop it, only an erase of that slot (or all) since.
+            still_current = self._slot_save_check(save_slot)
         try:
             # Get device info for height (honors options-flow override if set)
             base_info = await self.get_device_info()

@@ -51,6 +51,7 @@ def make_api():
     api._font_size_note = None
     api._content_generation = 0
     api._slot_epoch = 0
+    api._slot_epochs = {}
 
     async def device_info():
         return {"width": 64, "height": 20}

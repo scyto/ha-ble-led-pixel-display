@@ -78,3 +78,21 @@ def test_slot_save_requested_before_an_erase_is_dropped():
         return api._bluetooth.sent
 
     assert asyncio.run(scenario()) == ["erase"]
+
+
+def test_slot_save_requested_before_deleting_that_slot_is_dropped():
+    async def scenario():
+        api = make_api()
+        saved = asyncio.create_task(api.display_text_pypixelcolor("old", save_slot=2))
+        other = asyncio.create_task(api.display_text_pypixelcolor("other", save_slot=3))
+        await asyncio.sleep(0)
+        assert await api.delete_slot(2)
+        api._hass.pending["old"].set()
+        api._hass.pending["other"].set()
+        assert await saved
+        assert await other
+        return api._bluetooth.sent
+
+    sent = asyncio.run(scenario())
+    assert "old" not in sent
+    assert "other" in sent
