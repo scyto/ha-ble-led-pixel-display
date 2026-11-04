@@ -47,6 +47,7 @@ def test_font_without_json_gets_defaults(tmp_path):
     cfg = resolve_text_font(str(font), 16)
     assert cfg.font_size == 16
     assert cfg.offset == (0, 0)
+    assert cfg.var_width is False
     assert cfg.pixel_threshold == 70
 
 
@@ -59,6 +60,7 @@ def test_font_without_json_gets_defaults(tmp_path):
         {"16": {"font_size": 16, "offset": [1]}},
         {"16": {"font_size": 16, "offset": ["a", 0]}},
         {"16": {"font_size": "big", "offset": [0, 0]}},
+        {"16": {"font_size": 16, "offset": [0, 0], "var_width": "false"}},
     ],
 )
 def test_bad_json_falls_back_to_defaults(tmp_path, metrics):

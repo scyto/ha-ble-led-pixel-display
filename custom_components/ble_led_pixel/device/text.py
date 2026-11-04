@@ -99,11 +99,14 @@ def _font_settings(metrics: dict, char_height: int, path: Path) -> dict[str, Any
         offset = metrics.get("offset", (0, 0))
         if not isinstance(offset, (list, tuple)) or len(offset) != 2:
             raise ValueError(f"offset must be two numbers, got {offset!r}")
+        var_width = metrics.get("var_width", False)
+        if not isinstance(var_width, bool):
+            raise ValueError(f"var_width must be true or false, got {var_width!r}")
         return {
             "font_size": int(metrics.get("font_size", char_height)),
             "offset": (int(offset[0]), int(offset[1])),
             "pixel_threshold": int(metrics.get("pixel_threshold", _DEFAULT_PIXEL_THRESHOLD)),
-            "var_width": bool(metrics.get("var_width", False)),
+            "var_width": var_width,
         }
     except (ValueError, TypeError) as err:
         _LOGGER.warning("Ignoring invalid font metrics in %s: %s", path.with_suffix(".json"), err)
