@@ -19,14 +19,16 @@ SPEAKER = {"address": "CC:CC:CC:CC:CC:03", "name": "Speaker", "rssi": -80, "is_c
 
 
 class Flow(config_flow.ConfigFlow):
-    def __init__(self, configured=()):
+    def __init__(self, configured=(), ignored=()):
         super().__init__()
+        self._ignored = set(ignored)
         self.hass = object()
         self._configured = set(configured)
         self.created = None
 
-    def _async_current_ids(self):
-        return self._configured
+    def _async_current_ids(self, include_ignore=True):
+        # Home Assistant counts ignored entries unless told not to.
+        return self._configured | (self._ignored if include_ignore else set())
 
     def async_show_form(self, step_id, data_schema=None, errors=None, description_placeholders=None):
         options = dict(data_schema.schema[next(iter(data_schema.schema))].container) if data_schema else {}
@@ -127,3 +129,8 @@ def test_scanner_recognises_the_panel_service_uuid(monkeypatch):
     )
     found = scanner.discover_panels(object(), return_all=True)
     assert [d["is_compatible"] for d in found] == [True, False]
+
+
+def test_ignored_panel_can_still_be_set_up_by_hand(nearby):
+    form = run(Flow(ignored={PANEL["address"]}).async_step_user())
+    assert PANEL["address"] in form["options"]

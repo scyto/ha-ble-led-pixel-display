@@ -118,7 +118,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.exception("CONFIG_FLOW: Discovery failed")
             self._discovered_devices = {}
             return {"base": "discovery_failed"}
-        configured = self._async_current_ids()
+        configured = self._async_current_ids(include_ignore=False)
         self._discovered_devices = {
             device["address"]: device
             for device in discovered
