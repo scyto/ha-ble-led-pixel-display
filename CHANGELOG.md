@@ -127,6 +127,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   board" sold by Action, 13x13 cm and 32x32 pixels. The vendor's own brand
   grouping does not list the `0007` group at all, so this came from hardware.
 
+## [2.4.1] - 2026-11-04
+
+### Fixed
+
+- **The "not in the brand table" repair notice for the unbranded 64x20
+  panel (product id 000105).** It is a no-name eBay model, so there is no
+  brand to add and nothing to report. Product ids known to ship unbranded no
+  longer raise the notice, and an existing notice clears on the next start.
+
 ## [2.4.0] - 2026-11-04
 
 ### Added
