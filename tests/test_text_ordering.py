@@ -34,7 +34,10 @@ class Bluetooth:
     def __init__(self):
         self.sent = []
 
-    async def send_plan(self, plan, ack_timeout=None):
+    async def send_plan(self, plan, ack_timeout=None, still_current=None):
+        # Like the real client: asked once the send lock is held.
+        if still_current is not None and not still_current():
+            return True
         self.sent.append(plan.text)
         return True
 
@@ -85,3 +88,34 @@ def test_texts_in_order_are_all_sent():
         return api._bluetooth.sent
 
     assert asyncio.run(scenario()) == ["one", "two"]
+
+
+def test_older_text_stuck_reconnecting_does_not_overwrite_a_newer_one():
+    async def scenario():
+        api = make_api()
+        link_up = asyncio.Event()
+
+        async def slow_reconnect():
+            await link_up.wait()  # e.g. running the queued restore
+            return True
+
+        api.ensure_connected = slow_reconnect
+        old = asyncio.create_task(api.display_text_pypixelcolor("old"))
+        await asyncio.sleep(0)
+        api._hass.pending["old"].set()
+        await asyncio.sleep(0)
+        await asyncio.sleep(0)  # old is now waiting in ensure_connected
+
+        async def connected():
+            return True
+
+        api.ensure_connected = connected
+        new = asyncio.create_task(api.display_text_pypixelcolor("new"))
+        await asyncio.sleep(0)
+        api._hass.pending["new"].set()
+        assert await new
+        link_up.set()
+        assert await old
+        return api._bluetooth.sent
+
+    assert asyncio.run(scenario()) == ["new"]

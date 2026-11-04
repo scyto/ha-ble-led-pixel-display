@@ -1440,7 +1440,14 @@ class BleLedPixelAPI:
                 _LOGGER.error("Cannot connect to send text plan")
                 return False
 
-            success = await self._bluetooth.send_plan(commands, ack_timeout=25.0)
+            # Checked again under the send lock: reconnecting (which runs any
+            # queued restore) and waiting for the lock are both awaits a newer
+            # request can overtake this one in.
+            success = await self._bluetooth.send_plan(
+                commands,
+                ack_timeout=25.0,
+                still_current=lambda: generation == self._text_generation,
+            )
             if not success:
                 _LOGGER.error("Failed to send pypixelcolor text plan")
                 return False
