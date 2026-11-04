@@ -14,6 +14,7 @@ from homeassistant.helpers.restore_state import RestoreEntity
 
 from .api import BleLedPixelAPI
 from .const import (
+    ALL_TEXT_EFFECTS,
     AVAILABLE_MODES,
     CONF_ADDRESS,
     CONF_NAME,
@@ -308,7 +309,6 @@ class BleLedPixelTextEffectSelect(SelectEntity, RestoreEntity):
 
         self._attr_name = "Text Effect"
         self._attr_unique_id = f"{address}_text_effect_select"
-        self._attr_options = list(text_effects(api.vertical_scroll_allowed))
         self._attr_current_option = DEFAULT_TEXT_EFFECT
 
         self._attr_device_info = panel_device_info(api, address, name)
@@ -319,7 +319,7 @@ class BleLedPixelTextEffectSelect(SelectEntity, RestoreEntity):
         last_state = await self.async_get_last_state()
         if last_state is None:
             return
-        if last_state.state in self._attr_options:
+        if last_state.state in ALL_TEXT_EFFECTS:
             self._attr_current_option = last_state.state
             _LOGGER.debug("Restored text effect: %s", self._attr_current_option)
             return
@@ -335,13 +335,22 @@ class BleLedPixelTextEffectSelect(SelectEntity, RestoreEntity):
                 return
 
     @property
+    def options(self) -> list[str]:
+        """Effects for this panel.
+
+        Read each time, so a 32x32 panel that was out of reach at setup gains
+        scroll up/down once its size is known.
+        """
+        return list(text_effects(self._api.vertical_scroll_allowed))
+
+    @property
     def current_option(self) -> str | None:
         """Return the selected effect."""
         return self._attr_current_option
 
     async def async_select_option(self, option: str) -> None:
         """Select an effect and refresh the display if it is showing text."""
-        if option not in self._attr_options:
+        if option not in self.options:
             _LOGGER.error("Unknown text effect: %s", option)
             return
         self._attr_current_option = option

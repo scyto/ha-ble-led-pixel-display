@@ -201,7 +201,10 @@ class BleLedPixelTextDisplay(TextEntity, RestoreEntity):
             speed: Animation speed (0-100).
             rainbow_mode: Rainbow color-cycling mode (0-9).
         """
-        if animation in VERTICAL_TEXT_EFFECTS.values() and not self._api.vertical_scroll_allowed:
+        if (
+            animation in VERTICAL_TEXT_EFFECTS.values()
+            and not await self._api.async_vertical_scroll_allowed()
+        ):
             raise HomeAssistantError(
                 "Scroll up and scroll down are off for this panel. Turn on "
                 "'Offer scroll up and scroll down' in the integration options "

@@ -383,7 +383,7 @@ async def _update_text_mode(hass: HomeAssistant, device_name: str, api, text: st
         effect_name = await _get_entity_setting(
             hass, device_name, "select", "text_effect_select", str, api._address
         )
-        animation = text_effects(api.vertical_scroll_allowed).get(
+        animation = text_effects(await api.async_vertical_scroll_allowed()).get(
             effect_name, TEXT_EFFECTS[DEFAULT_TEXT_EFFECT]
         )
 

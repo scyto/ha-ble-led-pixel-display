@@ -630,6 +630,22 @@ class BleLedPixelAPI:
         except (KeyError, TypeError):
             return False
 
+    async def async_vertical_scroll_allowed(self) -> bool:
+        """Like vertical_scroll_allowed, but asks the panel its size first.
+
+        A panel that was out of reach at setup has no size yet, and a 32x32
+        one would be refused scroll up/down until something else happened to
+        query it.
+        """
+        if self.vertical_scroll_allowed or self._device_info is not None:
+            return self.vertical_scroll_allowed
+        try:
+            if await self.ensure_connected():
+                await self.get_device_info()
+        except Exception as err:  # noqa: BLE001 - unknown size just means "not allowed"
+            _LOGGER.debug("Could not read the panel size: %s", err)
+        return self.vertical_scroll_allowed
+
     @property
     def device_info(self) -> dict[str, Any] | None:
         """Everything known about the panel, or None before it was queried."""
