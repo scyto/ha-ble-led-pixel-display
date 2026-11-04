@@ -7,12 +7,15 @@
   Eine Custom Integration für LED-Pixelmatrix-Displays mit iPIXEL-Color-Protokoll, verkauft als **BGLight** und als **B.K. Light LED Pixel Board** bei Action. Vollständig lokal über Bluetooth LE — keine Cloud, keine Hersteller-App, kein Konto.
 
   [![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5?style=for-the-badge)](https://hacs.xyz)
-  [![Release](https://img.shields.io/github/v/release/sphings79/ha-ble-led-pixel-display?style=for-the-badge&color=7C7CF5)](https://github.com/sphings79/ha-ble-led-pixel-display/releases)
+  [![Release](https://img.shields.io/github/v/release/scyto/ha-ble-led-pixel-display?style=for-the-badge&color=7C7CF5)](https://github.com/scyto/ha-ble-led-pixel-display/releases)
   [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.1%2B-41BDF5?style=for-the-badge)](https://www.home-assistant.io)
   [![Lizenz](https://img.shields.io/badge/Lizenz-GPL--3.0-3ddc97?style=for-the-badge)](LICENSE)
 
   [English](README.md) · **Deutsch**
 </div>
+
+> **Hinweis:** Diese deutsche Fassung wird nicht laufend gepflegt und kann hinter der [englischen README](README.md) zurückliegen. Bei Abweichungen gilt die englische Fassung.
+
 
 <div align="center">
   <img src="assets/panels.gif" alt="Animation: ein 64x16-BLE-LED-Pixel-Panel wechselt durch H 99M 62, PV 2400W, SoC 78% und B 1557W, daneben ein 32x32-Panel mit Herz, Sonne, Batterie und Blitz" width="100%">
@@ -133,7 +136,7 @@ kommentarlos, ein stilles Nichts wäre von Erfolg nicht zu unterscheiden.
 
 Hat dein Panel eine dieser Funktionen und der Sensor behauptet das Gegenteil,
 aktiviere in den Optionen *Presets, Anzeigetafel, Countdown und Stoppuhr
-trotzdem anbieten* und [melde es](https://github.com/sphings79/ha-ble-led-pixel-display/issues)
+trotzdem anbieten* und [melde es](https://github.com/scyto/ha-ble-led-pixel-display/issues)
 mit dem Wert des Produkt-ID-Sensors, damit die Tabelle korrigiert werden kann.
 
 Weder die verstrichene Zeit der Stoppuhr noch die Restzeit des Countdowns lassen
@@ -233,7 +236,7 @@ einmal pro Änderung, nicht bei jeder Aktualisierung.
 
 1. HACS in Home Assistant öffnen
 2. Drei-Punkte-Menü oben rechts → **Benutzerdefinierte Repositories**
-3. Repository-URL: `https://github.com/sphings79/ha-ble-led-pixel-display`
+3. Repository-URL: `https://github.com/scyto/ha-ble-led-pixel-display`
 4. Kategorie: **Integration** → **Hinzufügen**
 5. Nach **BLE LED Pixel Display** suchen und installieren
 6. Home Assistant neu starten
@@ -513,7 +516,7 @@ logger:
 - [Protokolldokumentation](docs/protocol.md) — das Bluetooth-Protokoll dieser Panels, rekonstruiert aus der Hersteller-App
 - [Resetting a password-locked panel](docs/password_reset.md) — ein aus der App gesperrtes Panel entsperren
 
-## Weitere Home-Assistant-Projekte
+## Weitere Home-Assistant-Projekte des ursprünglichen Autors
 
 - [Marstek Modbus Suite](https://github.com/sphings79/marstek-modbus-suite) — Marstek-Venus-Speicher über lokales Modbus TCP
 - [Shelly Modbus](https://github.com/sphings79/shelly-modbus-home-assistant) — Shelly-Energiezähler und -Relais über Modbus TCP, ohne Cloud

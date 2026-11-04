@@ -27,5 +27,5 @@ advertising and cannot be discovered.
 automations that update regularly. It explains why the `Auto Update` switch
 should be off and the `Update Display` button used instead.
 
-[Full documentation](https://github.com/sphings79/ha-ble-led-pixel-display) ·
-[Deutsch](https://github.com/sphings79/ha-ble-led-pixel-display/blob/main/README.de.md)
+[Full documentation](https://github.com/scyto/ha-ble-led-pixel-display) ·
+[Deutsch](https://github.com/scyto/ha-ble-led-pixel-display/blob/main/README.de.md)
