@@ -127,6 +127,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   board" sold by Action, 13x13 cm and 32x32 pixels. The vendor's own brand
   grouping does not list the `0007` group at all, so this came from hardware.
 
+## [Unreleased]
+
+### Fixed
+
+- **The bundled fonts' tuning was ignored in text mode.** Each font in
+  `fonts/` ships a JSON file with its size, offset, pixel threshold and
+  variable width per character height. pypixelcolor 0.4 read those itself;
+  0.5 stopped, so every font was drawn with defaults. The integration now
+  reads the JSON and passes the closest entry to pypixelcolor. A font without
+  one is drawn at the text height with threshold 70, as under 0.4.
+- Building text commands (font loading and glyph rendering) now runs off the
+  event loop.
+
+### Added
+
+- **Your own fonts in `/config/fonts/`.** Searched before the bundled ones,
+  and kept across HACS updates, which replace the integration's own `fonts/`
+  folder. Reloading the integration picks up newly added fonts.
+
 ## [2.3.8] - 2026-11-04
 
 First release from the scyto/ha-ble-led-pixel-display fork, based on 2.3.7.

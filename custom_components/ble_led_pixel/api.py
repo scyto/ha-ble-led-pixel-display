@@ -6,6 +6,7 @@ import logging
 from collections.abc import Awaitable, Callable
 from pathlib import Path
 from typing import Any, TYPE_CHECKING
+from functools import partial
 from math import floor
 
 if TYPE_CHECKING:
@@ -1406,16 +1407,21 @@ class BleLedPixelAPI:
                 self._font_size_note = None
 
             # Generate text commands using pypixelcolor
-            commands = make_text_command(
-                text=text,
-                color=color,
-                bg_color=bg_color,
-                font=resolve_font_for_library(font),
-                animation=animation,
-                speed=speed,
-                rainbow_mode=rainbow_mode,
-                save_slot=0,
-                char_height=char_height
+            # Off the event loop: reads the font file and its metrics, and
+            # renders every glyph.
+            commands = await self._hass.async_add_executor_job(
+                partial(
+                    make_text_command,
+                    text=text,
+                    color=color,
+                    bg_color=bg_color,
+                    font=resolve_font_for_library(font),
+                    animation=animation,
+                    speed=speed,
+                    rainbow_mode=rainbow_mode,
+                    save_slot=0,
+                    char_height=char_height,
+                )
             )
 
             # A SendPlan, not a list of frames: longer texts exceed one BLE
