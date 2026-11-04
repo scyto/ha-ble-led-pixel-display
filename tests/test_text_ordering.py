@@ -50,6 +50,7 @@ def make_api():
     api._address = "AA:BB"
     api._font_size_note = None
     api._content_generation = 0
+    api._slot_epoch = 0
 
     async def device_info():
         return {"width": 64, "height": 20}

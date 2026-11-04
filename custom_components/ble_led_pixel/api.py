@@ -132,6 +132,10 @@ class BleLedPixelAPI:
         # an older plan that comes back after newer content was asked for is
         # dropped instead of sent over it. See _claim_content.
         self._content_generation = 0
+        # Bumped by delete_all_slots, so a slot save that was requested before
+        # the erase but reaches the send lock after it is dropped instead of
+        # leaving the panel non-empty.
+        self._slot_epoch = 0
         self._device_info: dict[str, Any] | None = None
         self._device_response: bytes | None = None
 
@@ -444,6 +448,11 @@ class BleLedPixelAPI:
             except Exception as err:  # noqa: BLE001
                 _LOGGER.debug("Reconnect task ended with: %s", err)
             self._reconnect_task = None
+
+    def _slot_save_check(self) -> Callable[[], bool]:
+        """A check that no erase of all slots was requested since this call."""
+        epoch = self._slot_epoch
+        return lambda: epoch == self._slot_epoch
 
     def _claim_content(self) -> Callable[[], bool]:
         """Mark a new display request and return a check that it is still the latest.
@@ -981,8 +990,9 @@ class BleLedPixelAPI:
         """
         still_current = self._claim_content()
         if save_slot >= 1:
-            # Saving to a slot is storage, not just display: never drop it.
-            still_current = None
+            # Saving to a slot is storage, not just display: newer content
+            # does not drop it, only an erase of all slots requested since.
+            still_current = self._slot_save_check()
         try:
             device_info = await self.get_device_info()
             width = device_info["width"]
@@ -1136,8 +1146,9 @@ class BleLedPixelAPI:
         """
         still_current = self._claim_content()
         if save_slot >= 1:
-            # Saving to a slot is storage, not just display: never drop it.
-            still_current = None
+            # Saving to a slot is storage, not just display: newer content
+            # does not drop it, only an erase of all slots requested since.
+            still_current = self._slot_save_check()
         try:
             device_info = await self.get_device_info()
             width = device_info["width"]
@@ -1225,8 +1236,9 @@ class BleLedPixelAPI:
         """
         still_current = self._claim_content()
         if save_slot >= 1:
-            # Saving to a slot is storage, not just display: never drop it.
-            still_current = None
+            # Saving to a slot is storage, not just display: newer content
+            # does not drop it, only an erase of all slots requested since.
+            still_current = self._slot_save_check()
         try:
             path = Path(file_path)
             file_bytes = await self._hass.async_add_executor_job(path.read_bytes)
@@ -1375,6 +1387,9 @@ class BleLedPixelAPI:
         The vendor app calls this deleteAllData. The panel cannot report which
         slots hold something, so this is the only way to a known-clean state.
         """
+        # Earlier slot saves still rendering or waiting for the link would
+        # otherwise land after the erase.
+        self._slot_epoch += 1
         try:
             success = await self._send_with_reconnect(DELETE_ALL_COMMAND)
         except Exception as err:  # noqa: BLE001 - reported as a failed action
@@ -1518,8 +1533,9 @@ class BleLedPixelAPI:
         """
         still_current = self._claim_content()
         if save_slot >= 1:
-            # Saving to a slot is storage, not just display: never drop it.
-            still_current = None
+            # Saving to a slot is storage, not just display: newer content
+            # does not drop it, only an erase of all slots requested since.
+            still_current = self._slot_save_check()
         try:
             # Get device info for height (honors options-flow override if set)
             base_info = await self.get_device_info()
