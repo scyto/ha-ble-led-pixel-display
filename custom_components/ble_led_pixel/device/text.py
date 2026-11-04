@@ -108,7 +108,7 @@ def _font_settings(metrics: dict, char_height: int, path: Path) -> dict[str, Any
             "pixel_threshold": int(metrics.get("pixel_threshold", _DEFAULT_PIXEL_THRESHOLD)),
             "var_width": var_width,
         }
-    except (ValueError, TypeError) as err:
+    except (ValueError, TypeError, OverflowError) as err:
         _LOGGER.warning("Ignoring invalid font metrics in %s: %s", path.with_suffix(".json"), err)
         return defaults
 

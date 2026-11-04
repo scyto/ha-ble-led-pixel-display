@@ -61,6 +61,8 @@ def test_font_without_json_gets_defaults(tmp_path):
         {"16": {"font_size": 16, "offset": ["a", 0]}},
         {"16": {"font_size": "big", "offset": [0, 0]}},
         {"16": {"font_size": 16, "offset": [0, 0], "var_width": "false"}},
+        {"16": {"font_size": float("inf"), "offset": [0, 0]}},
+        {"16": {"font_size": 16, "offset": [float("inf"), 0]}},
     ],
 )
 def test_bad_json_falls_back_to_defaults(tmp_path, metrics):
