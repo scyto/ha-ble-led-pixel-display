@@ -77,6 +77,10 @@ except ImportError:
 
 _LOGGER = logging.getLogger(__name__)
 
+# Erase everything stored on the panel (opcode 0x8003, deleteAllData in the
+# vendor app). See docs/protocol.md, A.8.
+DELETE_ALL_COMMAND = bytes([0x04, 0x00, 0x03, 0x80])
+
 
 class BleLedPixelAPI:
     """BLE LED pixel panel API client - simplified facade."""
@@ -1365,6 +1369,23 @@ class BleLedPixelAPI:
             _LOGGER.error("Error deleting slot %d: %s", slot, err)
             return False
 
+    async def delete_all_slots(self) -> bool:
+        """Erase everything stored on the panel (opcode 0x8003).
+
+        The vendor app calls this deleteAllData. The panel cannot report which
+        slots hold something, so this is the only way to a known-clean state.
+        """
+        try:
+            success = await self._send_with_reconnect(DELETE_ALL_COMMAND)
+        except Exception as err:  # noqa: BLE001 - reported as a failed action
+            _LOGGER.error("Error erasing stored content: %s", err)
+            return False
+        if success:
+            _LOGGER.info("Erased all stored content on %s", self._address)
+        else:
+            _LOGGER.error("Failed to erase stored content on %s", self._address)
+        return success
+
     @property
     def features(self) -> frozenset[str]:
         """Extra features this panel supports.
@@ -1473,7 +1494,8 @@ class BleLedPixelAPI:
         animation: int = 0,
         speed: int = 80,
         rainbow_mode: int = 0,
-        font_size: int = 16
+        font_size: int = 16,
+        save_slot: int = 0,
     ) -> bool:
         """Display text using pypixelcolor.
 
@@ -1489,11 +1511,15 @@ class BleLedPixelAPI:
             speed: Animation speed (0-100)
             rainbow_mode: Rainbow mode (0-9)
             font_size: Font size (16, 32, 48, 64) defaults to 16
+            save_slot: If >= 1, also store the text in that slot.
 
         Returns:
             True if text was sent successfully
         """
         still_current = self._claim_content()
+        if save_slot >= 1:
+            # Saving to a slot is storage, not just display: never drop it.
+            still_current = None
         try:
             # Get device info for height (honors options-flow override if set)
             base_info = await self.get_device_info()
@@ -1540,12 +1566,12 @@ class BleLedPixelAPI:
                     animation=animation,
                     speed=speed,
                     rainbow_mode=rainbow_mode,
-                    save_slot=0,
+                    save_slot=save_slot,
                     char_height=char_height,
                 )
             )
 
-            if not still_current():
+            if still_current is not None and not still_current():
                 _LOGGER.debug("Dropping text '%s': newer content superseded it", text)
                 return True
 

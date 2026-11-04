@@ -47,6 +47,7 @@ def make_api():
     api._hass = Hass()
     api._bluetooth = Bluetooth()
     api._entry = None
+    api._address = "AA:BB"
     api._font_size_note = None
     api._content_generation = 0
 
