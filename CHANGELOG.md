@@ -127,7 +127,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   board" sold by Action, 13x13 cm and 32x32 pixels. The vendor's own brand
   grouping does not list the `0007` group at all, so this came from hardware.
 
-## [Unreleased]
+## [2.5.0] - 2026-11-04
 
 ### Added
 
@@ -137,7 +137,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   way to a clean state.
 - **`send_text` can save the text to a slot** (`save_slot`, 1-10), like
   `send_image_file`, `send_mdi_icon` and `send_layout` already could. A text
-  being saved is never dropped as superseded.
+  being saved is not dropped by newer content, only by an erase requested
+  after it.
+
+## [2.4.1] - 2026-11-04
+
+### Fixed
+
+- **The unbranded 64x20 panel (product id 000105) is now listed as
+  Generic.** It is a no-name eBay model, so the "not in the brand table"
+  repair notice had nothing to ask. Its manufacturer now shows Generic, and
+  the notice clears on the next start.
 
 ## [2.4.0] - 2026-11-04
 
