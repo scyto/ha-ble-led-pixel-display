@@ -15,7 +15,6 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.loader import async_get_integration
 
-from .advertisement import KNOWN_UNBRANDED
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -69,7 +68,7 @@ async def async_report_unknown_panel(
         # No advertisement seen yet; nothing to report and nothing to clear.
         return
 
-    if device_info.get("brand") or cidpid in KNOWN_UNBRANDED:
+    if device_info.get("brand"):
         # Recognised after all - drop a notice from an earlier run.
         ir.async_delete_issue(hass, DOMAIN, issue_id)
         return

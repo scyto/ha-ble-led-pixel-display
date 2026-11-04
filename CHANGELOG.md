@@ -131,10 +131,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **The "not in the brand table" repair notice for the unbranded 64x20
-  panel (product id 000105).** It is a no-name eBay model, so there is no
-  brand to add and nothing to report. Product ids known to ship unbranded no
-  longer raise the notice, and an existing notice clears on the next start.
+- **The unbranded 64x20 panel (product id 000105) is now listed as
+  Generic.** It is a no-name eBay model, so the "not in the brand table"
+  repair notice had nothing to ask. Its manufacturer now shows Generic, and
+  the notice clears on the next start.
 
 ## [2.4.0] - 2026-11-04
 

@@ -46,15 +46,9 @@ BRANDS: dict[str, str] = {
     **{f"0025{n:02d}": "EZYEVY" for n in (10, 11, 12)},
     # Confirmed: "LED pixel board", 13x13 cm, 32x32 pixels
     "000702": "B.K. Light",
+    # Confirmed: 64x20, device type 133, sold unbranded on eBay
+    "000105": "Generic",
 }
-
-# Models confirmed to ship without a brand (no-name listings). They have no
-# manufacturer to show, but there is nothing left to ask the user either, so
-# the unknown-panel notice is not raised for them.
-KNOWN_UNBRANDED: frozenset[str] = frozenset({
-    # 64x20, device type 133, bought unbranded on eBay
-    "000105",
-})
 
 
 class PanelIdentity(NamedTuple):

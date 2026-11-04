@@ -43,10 +43,10 @@ def test_unknown_product_raises_the_notice(monkeypatch):
     assert registry.created == ["unknown_panel_AA:BB"]
 
 
-def test_known_unbranded_product_clears_the_notice(monkeypatch):
-    registry = run(monkeypatch, {"cidpid": "000105", "brand": None})
-    assert registry.created == []
-    assert registry.deleted == ["unknown_panel_AA:BB"]
+def test_unbranded_64x20_panel_is_listed_as_generic():
+    from custom_components.ble_led_pixel.advertisement import PanelIdentity
+
+    assert PanelIdentity("0001", "05", None).brand == "Generic"
 
 
 def test_branded_product_clears_the_notice(monkeypatch):
