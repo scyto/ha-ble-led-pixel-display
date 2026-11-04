@@ -112,6 +112,9 @@ class BleLedPixelAPI:
         # One-shot callbacks waiting for the link to come up; see
         # call_when_connected().
         self._on_connected: list[Callable[[], Awaitable[Any]]] = []
+        # Called once the panel has told us its size, for entities whose
+        # options depend on it and were set up before it was known.
+        self._device_info_listeners: list[Callable[[], None]] = []
         # Options this instance was set up with; __init__ compares against it
         # so an entry.data change does not trigger a reload.
         self.setup_options: dict[str, Any] = {}
@@ -630,6 +633,16 @@ class BleLedPixelAPI:
         except (KeyError, TypeError):
             return False
 
+    def add_device_info_listener(self, listener: Callable[[], None]) -> Callable[[], None]:
+        """Call listener when the panel reports its info; returns a remover."""
+        self._device_info_listeners.append(listener)
+
+        def remove() -> None:
+            if listener in self._device_info_listeners:
+                self._device_info_listeners.remove(listener)
+
+        return remove
+
     async def async_vertical_scroll_allowed(self) -> bool:
         """Like vertical_scroll_allowed, but asks the panel its size first.
 
@@ -796,6 +809,11 @@ class BleLedPixelAPI:
                     self._device_info["brand"] = identity.brand
                     await self._read_firmware()
                     _LOGGER.info("Device info retrieved on attempt %d: %s", attempt + 1, self._device_info)
+                    for listener in list(self._device_info_listeners):
+                        try:
+                            listener()
+                        except Exception:  # noqa: BLE001 - one entity must not break the query
+                            _LOGGER.exception("Device info listener failed")
                     return self._device_info
 
                 raise Exception("No response received")

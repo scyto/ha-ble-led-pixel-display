@@ -8,7 +8,7 @@ from typing import Any
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 
@@ -316,10 +316,15 @@ class BleLedPixelTextEffectSelect(SelectEntity, RestoreEntity):
     async def async_added_to_hass(self) -> None:
         """Restore the previous selection."""
         await super().async_added_to_hass()
+        self.async_on_remove(self._api.add_device_info_listener(self._panel_info_known))
         last_state = await self.async_get_last_state()
         if last_state is None:
             return
-        if last_state.state in ALL_TEXT_EFFECTS:
+        # Scroll up/down only while allowed -- or while the panel size is
+        # still unknown, in which case _panel_info_known settles it.
+        if last_state.state in self.options or (
+            last_state.state in ALL_TEXT_EFFECTS and self._api.device_info is None
+        ):
             self._attr_current_option = last_state.state
             _LOGGER.debug("Restored text effect: %s", self._attr_current_option)
             return
@@ -333,6 +338,18 @@ class BleLedPixelTextEffectSelect(SelectEntity, RestoreEntity):
                 self._attr_current_option = name
                 _LOGGER.debug("Migrated text effect %s to %s", code, name)
                 return
+
+    @callback
+    def _panel_info_known(self) -> None:
+        """Publish the options for the now-known panel size."""
+        if self._attr_current_option not in self.options:
+            _LOGGER.info(
+                "Text effect %s is not available on this panel; using %s",
+                self._attr_current_option, DEFAULT_TEXT_EFFECT,
+            )
+            self._attr_current_option = DEFAULT_TEXT_EFFECT
+        if self.hass is not None:
+            self.async_write_ha_state()
 
     @property
     def options(self) -> list[str]:
