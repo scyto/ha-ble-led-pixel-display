@@ -49,6 +49,18 @@ def build_report_url(device_info: dict[str, Any], integration_version: str) -> s
     return f"{ISSUE_FORM_URL}?{urlencode(params)}"
 
 
+def report_info_for(api) -> dict[str, Any] | None:
+    """Device info for the unknown-panel check, even while the panel is offline.
+
+    An offline panel has no device info yet, but its stored identity is
+    enough to raise -- or clear -- the notice.
+    """
+    if api.device_info is not None:
+        return api.device_info
+    identity = api.identity
+    return {"cidpid": identity.cidpid, "brand": identity.brand}
+
+
 async def async_report_unknown_panel(
     hass: HomeAssistant, address: str, device_info: dict[str, Any] | None
 ) -> None:

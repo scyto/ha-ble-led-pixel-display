@@ -53,3 +53,10 @@ def test_branded_product_clears_the_notice(monkeypatch):
     registry = run(monkeypatch, {"cidpid": "000702", "brand": "B.K. Light"})
     assert registry.created == []
     assert registry.deleted == ["unknown_panel_AA:BB"]
+
+
+def test_offline_panel_is_checked_from_its_stored_identity():
+    from custom_components.ble_led_pixel.advertisement import PanelIdentity
+
+    api = type("Api", (), {"device_info": None, "identity": PanelIdentity("0001", "05", None)})()
+    assert unknown_panel.report_info_for(api) == {"cidpid": "000105", "brand": "Generic"}
