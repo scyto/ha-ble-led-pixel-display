@@ -118,6 +118,10 @@ class BleLedPixelAPI:
         # Last (requested, effective) font size reported, so the note is
         # logged when the value changes rather than on every refresh.
         self._font_size_note: tuple[int, int] | None = None
+        # Bumped by every text request. Rendering runs in the executor, so a
+        # later short text can finish first; an older plan that comes back
+        # after a newer request started is dropped instead of sent over it.
+        self._text_generation = 0
         self._device_info: dict[str, Any] | None = None
         self._device_response: bytes | None = None
 
@@ -1373,6 +1377,8 @@ class BleLedPixelAPI:
         Returns:
             True if text was sent successfully
         """
+        self._text_generation += 1
+        generation = self._text_generation
         try:
             # Get device info for height (honors options-flow override if set)
             base_info = await self.get_device_info()
@@ -1423,6 +1429,10 @@ class BleLedPixelAPI:
                     char_height=char_height,
                 )
             )
+
+            if generation != self._text_generation:
+                _LOGGER.debug("Dropping text '%s': a newer text request superseded it", text)
+                return True
 
             # A SendPlan, not a list of frames: longer texts exceed one BLE
             # packet, so send_plan chunks each window and awaits its ACK.

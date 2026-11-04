@@ -1,0 +1,87 @@
+"""A text that finishes rendering after a newer one started is not sent."""
+from __future__ import annotations
+
+import asyncio
+
+from tests import ha_stubs
+
+ha_stubs.install()
+
+from custom_components.ble_led_pixel import api as api_module  # noqa: E402
+
+
+class Plan:
+    def __init__(self, text):
+        self.text = text
+        self.windows = [b"x"]
+
+
+class Hass:
+    """Runs executor jobs on demand, in an order the test picks."""
+
+    def __init__(self):
+        self.pending = {}
+
+    async def async_add_executor_job(self, job):
+        text = job.keywords["text"]
+        gate = asyncio.Event()
+        self.pending[text] = gate
+        await gate.wait()
+        return Plan(text)
+
+
+class Bluetooth:
+    def __init__(self):
+        self.sent = []
+
+    async def send_plan(self, plan, ack_timeout=None):
+        self.sent.append(plan.text)
+        return True
+
+
+def make_api():
+    api = api_module.BleLedPixelAPI.__new__(api_module.BleLedPixelAPI)
+    api._hass = Hass()
+    api._bluetooth = Bluetooth()
+    api._entry = None
+    api._font_size_note = None
+    api._text_generation = 0
+
+    async def device_info():
+        return {"width": 64, "height": 20}
+
+    async def connected():
+        return True
+
+    api.get_device_info = device_info
+    api.ensure_connected = connected
+    return api
+
+
+def test_older_render_finishing_last_is_dropped():
+    async def scenario():
+        api = make_api()
+        old = asyncio.create_task(api.display_text_pypixelcolor("a long old message"))
+        await asyncio.sleep(0)
+        new = asyncio.create_task(api.display_text_pypixelcolor("new"))
+        await asyncio.sleep(0)
+        api._hass.pending["new"].set()
+        assert await new
+        api._hass.pending["a long old message"].set()
+        assert await old
+        return api._bluetooth.sent
+
+    assert asyncio.run(scenario()) == ["new"]
+
+
+def test_texts_in_order_are_all_sent():
+    async def scenario():
+        api = make_api()
+        for text in ("one", "two"):
+            task = asyncio.create_task(api.display_text_pypixelcolor(text))
+            await asyncio.sleep(0)
+            api._hass.pending[text].set()
+            assert await task
+        return api._bluetooth.sent
+
+    assert asyncio.run(scenario()) == ["one", "two"]
