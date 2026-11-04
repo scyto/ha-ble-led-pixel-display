@@ -447,7 +447,14 @@ class BleLedPixelAPI:
         Every method that changes what the panel shows calls this first, so a
         slow render (text, an image, a layout) can tell when anything newer
         -- of any kind -- was requested while it worked, and drop itself.
+
+        A restore of saved settings only watches: it never advances the
+        generation, so it cannot invalidate a live request that started
+        before it, and it is itself dropped once a live request starts.
         """
+        if BluetoothClient.in_restore():
+            generation = self._content_generation
+            return lambda: generation == self._content_generation
         self._content_generation += 1
         generation = self._content_generation
         return lambda: generation == self._content_generation

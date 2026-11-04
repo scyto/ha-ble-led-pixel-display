@@ -142,3 +142,20 @@ def test_any_display_request_supersedes_earlier_ones():
     second = api._claim_content()
     assert not first()
     assert second()
+
+
+def test_restore_does_not_supersede_a_live_request():
+    from custom_components.ble_led_pixel.bluetooth.client import BluetoothClient
+
+    api = make_api()
+    live = api._claim_content()
+    client = BluetoothClient.__new__(BluetoothClient)
+    client._content_writes = 0
+    with client.restoring():
+        restore = api._claim_content()
+        assert live()
+        assert restore()
+    newer = api._claim_content()
+    assert newer()
+    assert not live()
+    assert not restore()

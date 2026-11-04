@@ -377,6 +377,11 @@ class BluetoothClient:
         finally:
             _RESTORE_SINCE.reset(token)
 
+    @staticmethod
+    def in_restore() -> bool:
+        """Whether the current task is inside a restoring() block."""
+        return _RESTORE_SINCE.get() is not None
+
     def _claim_content_write(self) -> bool:
         """Account for a content write; False when a restore is superseded.
 
