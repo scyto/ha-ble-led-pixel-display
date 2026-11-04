@@ -49,6 +49,9 @@ def test_api_honours_the_height_override():
     assert api.text_sizes == [16, 32]
     assert FakeAPI(height=20).text_sizes == [16]
     assert FakeAPI().text_sizes == [16, 32, 48, 64]
+    # Panel not queried yet: the override alone decides.
+    assert FakeAPI(options={OPT_OVERRIDE_DIMENSIONS: True, OPT_PANEL_HEIGHT: 16}).text_sizes == [16]
+    assert FakeAPI(options={OPT_PANEL_HEIGHT: 16}).text_sizes == [16, 32, 48, 64]  # override off
 
 
 def make_select(monkeypatch, api, number_state=None, last_state=None):

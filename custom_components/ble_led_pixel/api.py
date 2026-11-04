@@ -618,6 +618,11 @@ class BleLedPixelAPI:
     def text_sizes(self) -> list[int]:
         """Text-mode character heights this panel can show."""
         if self._device_info is None:
+            # Not queried yet (panel offline at setup). A height override
+            # already says how tall it is.
+            options = self._entry.options if self._entry is not None else {}
+            if options.get(OPT_OVERRIDE_DIMENSIONS) and options.get(OPT_PANEL_HEIGHT):
+                return text_sizes_for_height(options[OPT_PANEL_HEIGHT])
             return text_sizes_for_height(None)
         try:
             _, height = self._resolved_dimensions(self._device_info)
