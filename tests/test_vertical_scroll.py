@@ -24,6 +24,7 @@ def test_effect_lists():
 
 class FakeApi:
     vertical_scroll_allowed = api_module.BleLedPixelAPI.vertical_scroll_allowed
+    _known_dimensions = api_module.BleLedPixelAPI._known_dimensions
     _resolved_dimensions = api_module.BleLedPixelAPI._resolved_dimensions
     device_info = api_module.BleLedPixelAPI.device_info
     add_device_info_listener = api_module.BleLedPixelAPI.add_device_info_listener
@@ -43,6 +44,19 @@ class FakeApi:
 def test_off_by_default_on_other_panels():
     assert not FakeApi({}, {"width": 64, "height": 20}).vertical_scroll_allowed
     assert not FakeApi({}, None).vertical_scroll_allowed
+
+
+def test_32x32_override_counts_before_the_panel_answers():
+    from custom_components.ble_led_pixel.const import (
+        OPT_OVERRIDE_DIMENSIONS,
+        OPT_PANEL_HEIGHT,
+        OPT_PANEL_WIDTH,
+    )
+
+    override = {OPT_OVERRIDE_DIMENSIONS: True, OPT_PANEL_WIDTH: 32, OPT_PANEL_HEIGHT: 32}
+    assert FakeApi(override, None).vertical_scroll_allowed
+    assert not FakeApi({**override, OPT_OVERRIDE_DIMENSIONS: False}, None).vertical_scroll_allowed
+    assert not FakeApi({**override, OPT_PANEL_WIDTH: 64}, None).vertical_scroll_allowed
 
 
 def test_opt_in_enables_it():

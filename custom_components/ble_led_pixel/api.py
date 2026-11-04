@@ -64,6 +64,7 @@ from .const import (
     OPT_OVERRIDE_DIMENSIONS,
     OPT_PANEL_HEIGHT,
     OPT_PANEL_WIDTH,
+    text_sizes_for_height,
 )
 
 try:
@@ -617,6 +618,23 @@ class BleLedPixelAPI:
             async_report_unknown_panel(self._hass, self._address, self._device_info)
         )
 
+    def _known_dimensions(self) -> tuple[int | None, int | None]:
+        """(width, height) as far as known, either one None when unknown.
+
+        From the panel's own answer with the options-flow override applied,
+        or -- before the panel has been queried, e.g. it was offline at setup
+        -- from the override alone.
+        """
+        if self._device_info is not None:
+            try:
+                return self._resolved_dimensions(self._device_info)
+            except (KeyError, TypeError):
+                return None, None
+        options = self._entry.options if self._entry is not None else {}
+        if not options.get(OPT_OVERRIDE_DIMENSIONS):
+            return None, None
+        return options.get(OPT_PANEL_WIDTH) or None, options.get(OPT_PANEL_HEIGHT) or None
+
     @property
     def vertical_scroll_allowed(self) -> bool:
         """Whether the Scroll up/down text effects may be used on this panel.
@@ -626,12 +644,7 @@ class BleLedPixelAPI:
         """
         if self._entry is not None and self._entry.options.get(OPT_VERTICAL_SCROLL):
             return True
-        if self._device_info is None:
-            return False
-        try:
-            return self._resolved_dimensions(self._device_info) == (32, 32)
-        except (KeyError, TypeError):
-            return False
+        return self._known_dimensions() == (32, 32)
 
     def add_device_info_listener(self, listener: Callable[[], None]) -> Callable[[], None]:
         """Call listener when the panel reports its info; returns a remover."""
@@ -658,6 +671,12 @@ class BleLedPixelAPI:
         except Exception as err:  # noqa: BLE001 - unknown size just means "not allowed"
             _LOGGER.debug("Could not read the panel size: %s", err)
         return self.vertical_scroll_allowed
+
+    @property
+    def text_sizes(self) -> list[int]:
+        """Text-mode character heights this panel can show."""
+        _, height = self._known_dimensions()
+        return text_sizes_for_height(height)
 
     @property
     def device_info(self) -> dict[str, Any] | None:
