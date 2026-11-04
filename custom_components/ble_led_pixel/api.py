@@ -583,7 +583,7 @@ class BleLedPixelAPI:
                 "table. Everything works, only the manufacturer stays unset. "
                 "Please open an issue with this id and the brand printed on "
                 "the packaging so it can be added: "
-                "https://github.com/sphings79/ha-ble-led-pixel-display/issues",
+                "https://github.com/scyto/ha-ble-led-pixel-display/issues",
                 self._address, identity.cidpid,
             )
 
