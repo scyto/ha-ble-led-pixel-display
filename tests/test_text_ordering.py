@@ -159,3 +159,46 @@ def test_restore_does_not_supersede_a_live_request():
     assert newer()
     assert not live()
     assert not restore()
+
+
+def test_clock_stuck_reconnecting_does_not_overwrite_newer_text():
+    from custom_components.ble_led_pixel.api import BleLedPixelConnectionError
+
+    async def scenario():
+        api = make_api()
+        link_up = asyncio.Event()
+        first = [True]
+
+        async def send_command(command, content=False, still_current=None):
+            if first[0]:
+                first[0] = False
+                raise BleLedPixelConnectionError("link dropped")
+            if still_current is not None and not still_current():
+                return True
+            api._bluetooth.sent.append("clock")
+            return True
+
+        api._bluetooth.send_command = send_command
+
+        async def slow_reconnect():
+            await link_up.wait()
+            return True
+
+        api.ensure_connected = slow_reconnect
+        clock = asyncio.create_task(api.set_clock_mode())
+        await asyncio.sleep(0)
+        await asyncio.sleep(0)  # clock is now waiting in ensure_connected
+
+        async def connected():
+            return True
+
+        api.ensure_connected = connected
+        new = asyncio.create_task(api.display_text_pypixelcolor("new"))
+        await asyncio.sleep(0)
+        api._hass.pending["new"].set()
+        assert await new
+        link_up.set()
+        assert await clock
+        return api._bluetooth.sent
+
+    assert asyncio.run(scenario()) == ["new"]

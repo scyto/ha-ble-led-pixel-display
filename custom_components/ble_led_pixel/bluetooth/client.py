@@ -399,7 +399,12 @@ class BluetoothClient:
             return False
         return True
 
-    async def send_command(self, command: bytes, content: bool = False) -> bool:
+    async def send_command(
+        self,
+        command: bytes,
+        content: bool = False,
+        still_current: Callable[[], bool] | None = None,
+    ) -> bool:
         """Send a small, single-packet command and log any response.
 
         Args:
@@ -407,11 +412,16 @@ class BluetoothClient:
             content: True for commands that change what the panel shows
                 (clock mode, presets, scoreboard), as opposed to settings
                 such as power, brightness or the password.
+            still_current: As for send_plan: asked once the link is ours,
+                and the command is dropped if newer content was requested.
 
         Raises:
             BleLedPixelConnectionError: If not connected
         """
         async with self._send_lock:
+            if still_current is not None and not still_current():
+                _LOGGER.debug("Dropping a superseded command")
+                return True
             if content and not self._claim_content_write():
                 return True
             return await self._send_command_unlocked(command)
