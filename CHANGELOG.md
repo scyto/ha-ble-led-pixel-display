@@ -127,6 +127,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   board" sold by Action, 13x13 cm and 32x32 pixels. The vendor's own brand
   grouping does not list the `0007` group at all, so this came from hardware.
 
+## [Unreleased]
+
+### Added
+
+- **Text Size select for text mode.** Text mode is drawn by the panel in whole
+  16px rows, so the select offers 16, 32, 48 and 64 and only the sizes that fit
+  the panel (honouring a height override). It used to take its size from the
+  Font Size number, which accepts 0.5px steps that text mode silently rounded
+  away. On the first start, Text Size is set from that number so nothing
+  changes visually.
+
+### Changed
+
+- **Font Size is now called Image Font Size**, since it only affects the
+  `textimage` mode. Its entity id is unchanged.
+
 ## [2.3.8] - 2026-11-04
 
 First release from the scyto/ha-ble-led-pixel-display fork, based on 2.3.7.
