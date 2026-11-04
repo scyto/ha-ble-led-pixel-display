@@ -60,6 +60,7 @@ from .exceptions import BleLedPixelConnectionError, BleLedPixelFeatureUnsupporte
 from .const import (
     OPT_FORCE_FEATURES,
     OPT_PASSWORD,
+    OPT_VERTICAL_SCROLL,
     OPT_OVERRIDE_DIMENSIONS,
     OPT_PANEL_HEIGHT,
     OPT_PANEL_WIDTH,
@@ -612,6 +613,22 @@ class BleLedPixelAPI:
         self._hass.async_create_task(
             async_report_unknown_panel(self._hass, self._address, self._device_info)
         )
+
+    @property
+    def vertical_scroll_allowed(self) -> bool:
+        """Whether the Scroll up/down text effects may be used on this panel.
+
+        Always on a 32x32 panel, which pypixelcolor itself allows; elsewhere
+        only when turned on in the options.
+        """
+        if self._entry is not None and self._entry.options.get(OPT_VERTICAL_SCROLL):
+            return True
+        if self._device_info is None:
+            return False
+        try:
+            return self._resolved_dimensions(self._device_info) == (32, 32)
+        except (KeyError, TypeError):
+            return False
 
     @property
     def device_info(self) -> dict[str, Any] | None:

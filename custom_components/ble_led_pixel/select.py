@@ -22,6 +22,7 @@ from .const import (
     DEFAULT_TEXT_GRADIENT,
     DOMAIN,
     TEXT_EFFECTS,
+    text_effects,
     TEXT_GRADIENTS,
 )
 from .device_types import clock_style_count
@@ -307,7 +308,7 @@ class BleLedPixelTextEffectSelect(SelectEntity, RestoreEntity):
 
         self._attr_name = "Text Effect"
         self._attr_unique_id = f"{address}_text_effect_select"
-        self._attr_options = list(TEXT_EFFECTS)
+        self._attr_options = list(text_effects(api.vertical_scroll_allowed))
         self._attr_current_option = DEFAULT_TEXT_EFFECT
 
         self._attr_device_info = panel_device_info(api, address, name)
@@ -327,7 +328,7 @@ class BleLedPixelTextEffectSelect(SelectEntity, RestoreEntity):
             code = int(float(last_state.state))
         except (TypeError, ValueError):
             return
-        for name, value in TEXT_EFFECTS.items():
+        for name, value in text_effects(self._api.vertical_scroll_allowed).items():
             if value == code:
                 self._attr_current_option = name
                 _LOGGER.debug("Migrated text effect %s to %s", code, name)

@@ -127,6 +127,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   board" sold by Action, 13x13 cm and 32x32 pixels. The vendor's own brand
   grouping does not list the `0007` group at all, so this came from hardware.
 
+## [Unreleased]
+
+### Added
+
+- **Scroll up and Scroll down text effects** (codes 3 and 4). Offered on
+  32x32 panels; on others, turn on *Offer scroll up and scroll down text
+  effects* in the options. They work on the 64x20 panel (Type 133), though
+  pypixelcolor warns they can boot-loop some devices outside 32x32. The
+  `send_text` action lists them too and refuses them while they are off.
+
 ## [2.3.8] - 2026-11-04
 
 First release from the scyto/ha-ble-led-pixel-display fork, based on 2.3.7.
