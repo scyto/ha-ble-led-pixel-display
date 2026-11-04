@@ -809,11 +809,7 @@ class BleLedPixelAPI:
                     self._device_info["brand"] = identity.brand
                     await self._read_firmware()
                     _LOGGER.info("Device info retrieved on attempt %d: %s", attempt + 1, self._device_info)
-                    for listener in list(self._device_info_listeners):
-                        try:
-                            listener()
-                        except Exception:  # noqa: BLE001 - one entity must not break the query
-                            _LOGGER.exception("Device info listener failed")
+                    self._notify_device_info()
                     return self._device_info
 
                 raise Exception("No response received")
@@ -844,7 +840,16 @@ class BleLedPixelAPI:
             "cidpid": None,
             "brand": None,
         }
+        # Cached like a real answer, so this is the size from now on too.
+        self._notify_device_info()
         return self._device_info
+
+    def _notify_device_info(self) -> None:
+        for listener in list(self._device_info_listeners):
+            try:
+                listener()
+            except Exception:  # noqa: BLE001 - one entity must not break the query
+                _LOGGER.exception("Device info listener failed")
     
     async def display_text(self, text: str, antialias: bool = True, font_size: float | None = None, font: str | None = None, line_spacing: int = 0, text_color: str = "ffffff", bg_color: str = "000000") -> bool:
         """Display text as image using PIL and pypixelcolor with color gradient mapping.

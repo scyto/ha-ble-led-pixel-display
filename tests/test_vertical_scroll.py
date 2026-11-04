@@ -160,3 +160,24 @@ def test_listener_is_removed_with_the_entity():
     assert len(entity._api._device_info_listeners) == 1
     entity.removers[0]()
     assert entity._api._device_info_listeners == []
+
+
+def test_listeners_hear_about_the_fallback_size_too(monkeypatch):
+    api = api_module.BleLedPixelAPI.__new__(api_module.BleLedPixelAPI)
+    api._device_info = None
+    api._device_info_listeners = []
+    heard = []
+    api.add_device_info_listener(lambda: heard.append(api._device_info["height"]))
+
+    class Silent:
+        async def send_command_wait_response(self, command, timeout=None):
+            return None
+
+    api._bluetooth = Silent()
+
+    async def no_sleep(_):
+        return None
+
+    monkeypatch.setattr(api_module.asyncio, "sleep", no_sleep)
+    run(api.get_device_info())
+    assert heard == [16]
