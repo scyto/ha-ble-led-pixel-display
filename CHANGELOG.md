@@ -164,6 +164,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **The README has a dashboard card that shows only the settings for the
   current mode.**
 
+- **Links point at this fork.** The release badge, the HACS repository URL,
+  the issue links, and the bug-report link in the unknown-panel repair notice
+  now go to scyto/ha-ble-led-pixel-display. The README credits the upstream
+  repository, and the German README notes that it can lag behind the English.
+
 ### Fixed
 
 - **A failed connection during setup now says so.** The picker used to come

@@ -7,7 +7,7 @@
   A custom integration for LED pixel matrix displays that speak the iPIXEL Color protocol, sold as **BGLight** and as the **B.K. Light LED Pixel Board** at Action. Fully local over Bluetooth LE — no cloud, no vendor app, no account.
 
   [![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5?style=for-the-badge)](https://hacs.xyz)
-  [![Release](https://img.shields.io/github/v/release/sphings79/ha-ble-led-pixel-display?style=for-the-badge&color=7C7CF5)](https://github.com/sphings79/ha-ble-led-pixel-display/releases)
+  [![Release](https://img.shields.io/github/v/release/scyto/ha-ble-led-pixel-display?style=for-the-badge&color=7C7CF5)](https://github.com/scyto/ha-ble-led-pixel-display/releases)
   [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.1%2B-41BDF5?style=for-the-badge)](https://www.home-assistant.io)
   [![License](https://img.shields.io/badge/License-GPL--3.0-3ddc97?style=for-the-badge)](LICENSE)
 
@@ -132,7 +132,7 @@ without complaint — a silent no-op would be indistinguishable from success.
 
 If your panel does have one of these and the sensor says otherwise, turn on
 *Offer presets, scoreboard, countdown and stopwatch anyway* in the integration
-options and [open an issue](https://github.com/sphings79/ha-ble-led-pixel-display/issues)
+options and [open an issue](https://github.com/scyto/ha-ble-led-pixel-display/issues)
 with the Product ID sensor's value, so the table can be corrected.
 
 Neither the elapsed stopwatch time nor the remaining countdown can be read
@@ -239,7 +239,7 @@ every refresh.
 
 1. Open HACS in Home Assistant
 2. Three dots menu, top right → **Custom repositories**
-3. Repository URL: `https://github.com/sphings79/ha-ble-led-pixel-display`
+3. Repository URL: `https://github.com/scyto/ha-ble-led-pixel-display`
 4. Category: **Integration** → **Add**
 5. Search for **BLE LED Pixel Display**, install it
 6. Restart Home Assistant
@@ -559,7 +559,9 @@ Bundled: `3x5-de`, `5x5`, `7x5`, `WP7xn`, `OpenSans-Light`, `Lepidos`, `VCR_OSD_
 
 ## Why this fork exists
 
-This continues [cagcoach/ha-ipixel-color](https://github.com/cagcoach/ha-ipixel-color) by Christian Grund, which has had no commits since December 2025 while pull requests and issues piled up. It merges the image, MDI icon and layout work from [tigers75](https://github.com/tigers75/ha-ipixel-color) and adds fixes of its own — among them the font fallback above, and pinning `pypixelcolor` below 0.5 because the library has since removed the fonts that existing installations depend on.
+This continues [cagcoach/ha-ipixel-color](https://github.com/cagcoach/ha-ipixel-color) by Christian Grund, which has had no commits since December 2025 while pull requests and issues piled up. It merges the image, MDI icon and layout work from [tigers75](https://github.com/tigers75/ha-ipixel-color) and adds fixes of its own — among them the font fallback above, which keeps existing installations working on `pypixelcolor` 0.5 even though that release removed fonts they depended on.
+
+This repository, [scyto/ha-ble-led-pixel-display](https://github.com/scyto/ha-ble-led-pixel-display), is a fork of [sphings79/ha-ble-led-pixel-display](https://github.com/sphings79/ha-ble-led-pixel-display), which carries that work on. Its own changes are listed in the [changelog](CHANGELOG.md) from 2.3.8 onwards and are offered back upstream once tested.
 
 **The domain is `ble_led_pixel`, not `ipixel_color`.** Both integrations can therefore be installed side by side, so you can migrate one panel at a time instead of switching everything at once.
 
@@ -608,7 +610,7 @@ logger:
 - [Protocol documentation](docs/protocol.md) — the Bluetooth protocol these panels speak, reconstructed from the vendor app
 - [Resetting a password-locked panel](docs/password_reset.md) — recovering a panel locked from the app
 
-## More Home Assistant projects
+## More Home Assistant projects by the original author
 
 - [Marstek Modbus Suite](https://github.com/sphings79/marstek-modbus-suite) — Marstek Venus battery storage over local Modbus TCP
 - [Shelly Modbus](https://github.com/sphings79/shelly-modbus-home-assistant) — Shelly energy meters and relays over Modbus TCP, no cloud

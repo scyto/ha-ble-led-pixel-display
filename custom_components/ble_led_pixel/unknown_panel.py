@@ -19,7 +19,7 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-ISSUE_FORM_URL = "https://github.com/sphings79/ha-ble-led-pixel-display/issues/new"
+ISSUE_FORM_URL = "https://github.com/scyto/ha-ble-led-pixel-display/issues/new"
 ISSUE_TEMPLATE = "unknown-panel.yml"
 
 
