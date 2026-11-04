@@ -168,6 +168,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   one is drawn at the text height with threshold 70, as under 0.4.
 - Building text commands (font loading and glyph rendering) now runs off the
   event loop.
+- **A slow update can no longer overwrite a newer one.** Text and images are
+  rendered off the event loop, so a long text could finish after a later
+  image, clock or other text and replace it. A render that has been overtaken
+  by any newer display request is now dropped. Saving a picture to a slot is
+  never dropped.
 
 ## [2.3.8] - 2026-11-04
 

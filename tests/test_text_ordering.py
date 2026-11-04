@@ -38,7 +38,7 @@ class Bluetooth:
         # Like the real client: asked once the send lock is held.
         if still_current is not None and not still_current():
             return True
-        self.sent.append(plan.text)
+        self.sent.append(getattr(plan, "text", "other content"))
         return True
 
 
@@ -48,7 +48,7 @@ def make_api():
     api._bluetooth = Bluetooth()
     api._entry = None
     api._font_size_note = None
-    api._text_generation = 0
+    api._content_generation = 0
 
     async def device_info():
         return {"width": 64, "height": 20}
@@ -119,3 +119,26 @@ def test_older_text_stuck_reconnecting_does_not_overwrite_a_newer_one():
         return api._bluetooth.sent
 
     assert asyncio.run(scenario()) == ["new"]
+
+
+def test_older_text_does_not_overwrite_newer_non_text_content():
+    async def scenario():
+        api = make_api()
+        old = asyncio.create_task(api.display_text_pypixelcolor("old"))
+        await asyncio.sleep(0)
+        # An image, slot, emoji or clock request arrives while the text renders.
+        assert await api.show_slot(1)
+        api._hass.pending["old"].set()
+        assert await old
+        return api._bluetooth.sent
+
+    assert asyncio.run(scenario()) == ["other content"]
+
+
+def test_any_display_request_supersedes_earlier_ones():
+    api = make_api()
+    first = api._claim_content()
+    assert first()
+    second = api._claim_content()
+    assert not first()
+    assert second()
