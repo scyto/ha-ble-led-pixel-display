@@ -114,6 +114,12 @@ def test_switch_starts_on_with_no_history():
     assert entity.extra_state_attributes == {"commanded": False}
 
 
+def test_a_new_api_assumes_the_panel_is_on():
+    """The fake above starts on by itself; this checks the real default."""
+    api = api_module.BleLedPixelAPI(None, "AA:BB")
+    assert api.power_state is True
+
+
 def test_switch_restores_commanded_off():
     state = SimpleNamespace(state="off", attributes={"commanded": True})
     entity, api = _restored_switch(state)
