@@ -341,7 +341,7 @@ cards:
           - textimage
     card:
       type: entities
-      title: Message (text and textimage)
+      title: Text & Text Image Mode
       entities:
         - select.led_ble_7e9e1e82_text_font
         - light.led_ble_7e9e1e82_text_color
@@ -354,7 +354,7 @@ cards:
         state: text
     card:
       type: entities
-      title: Text mode
+      title: Text Mode Only
       entities:
         - select.led_ble_7e9e1e82_text_size
         - select.led_ble_7e9e1e82_text_effect
@@ -367,7 +367,7 @@ cards:
         state: textimage
     card:
       type: entities
-      title: Textimage mode
+      title: Text Image Mode Only
       entities:
         - number.led_ble_7e9e1e82_image_font_size
         - number.led_ble_7e9e1e82_image_line_spacing
