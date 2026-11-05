@@ -127,6 +127,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   board" sold by Action, 13x13 cm and 32x32 pixels. The vendor's own brand
   grouping does not list the `0007` group at all, so this came from hardware.
 
+## [2.8.1] - 2026-11-05
+
+### Fixed
+
+- **Text mode ignored the chosen font.** The font was resolved to a full path
+  and then resolved again, which missed the font index, logged "Font ... not
+  found in any location" and fell back to VCR_OSD_MONO. A path the integration
+  already resolved is now accepted as is, so the selected font is used and the
+  warning is gone. Text & Image mode was not affected.
+
+### Notes
+
+- Show Slot takes about 5 seconds to appear on the 64x20 panel: the panel
+  restarts its play list before it jumps to the slot. Pressing again in that
+  window starts it over.
+
 ## [2.8.0] - 2026-11-05
 
 ### Fixed
