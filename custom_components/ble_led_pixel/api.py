@@ -1429,12 +1429,18 @@ class BleLedPixelAPI:
                     char_height=16,
                 )
             )
-            if not await self.ensure_connected():
-                _LOGGER.error("Cannot connect to show slot %d", slot)
-                return False
-            if not await self._bluetooth.send_plan(
-                blank, ack_timeout=25.0, still_current=still_current
-            ):
+            # Like _send_with_reconnect: a link that dies mid-write gets one
+            # reconnect and retry, so a transient drop does not fail the action.
+            prepared = False
+            for _attempt in range(2):
+                if not await self.ensure_connected():
+                    break
+                if await self._bluetooth.send_plan(
+                    blank, ack_timeout=25.0, still_current=still_current
+                ):
+                    prepared = True
+                    break
+            if not prepared:
                 _LOGGER.error("Failed to prepare the panel to show slot %d", slot)
                 return False
             success = await self._send_with_reconnect(

@@ -145,6 +145,33 @@ def test_show_slot_saves_a_blank_to_the_scratch_slot_then_selects(monkeypatch):
     ]
 
 
+def test_scratch_write_is_retried_once_after_a_dropped_link(monkeypatch):
+    monkeypatch.setattr(api_module, "make_text_command", lambda **kwargs: "blank plan")
+    monkeypatch.setattr(api_module, "resolve_font_for_library", lambda name: "/font.ttf")
+    api = make_api()
+
+    async def run_now(job):
+        return job()
+
+    api._hass.async_add_executor_job = run_now
+    attempts = []
+    sent = []
+
+    async def send_plan(plan, ack_timeout=None, still_current=None):
+        attempts.append(plan)
+        return len(attempts) > 1  # the first write dies with the link
+
+    async def send_command(command, content=False, still_current=None):
+        sent.append(command)
+        return True
+
+    api._bluetooth.send_plan = send_plan
+    api._bluetooth.send_command = send_command
+    assert asyncio.run(api.show_slot(2))
+    assert attempts == ["blank plan", "blank plan"]
+    assert sent == [bytes([0x07, 0x00, 0x08, 0x80, 0x01, 0x00, 0x02])]
+
+
 def test_scratch_slot_is_outside_the_users_range():
     assert SCRATCH_SLOT > MAX_USER_SLOT
     assert number.BleLedPixelSlot._attr_native_max_value == MAX_USER_SLOT
