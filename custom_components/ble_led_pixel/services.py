@@ -68,6 +68,23 @@ def _panel_entities(hass: HomeAssistant) -> set:
     return hass.data.setdefault(DATA_PANEL_ENTITIES, set())
 
 
+def _excluded_entity_ids(hass: HomeAssistant, call: ServiceCall) -> set[str]:
+    """Entities an `entity_id: all` call excludes, on versions that support it.
+
+    Targeted calls get their exclusions applied by async_extract_entity_ids.
+    Home Assistant releases without an exclude block have nothing to exclude.
+    """
+    try:
+        from homeassistant.helpers import target as target_helpers
+    except ImportError:
+        return set()
+    extract = getattr(target_helpers, "async_extract_excluded_entity_ids", None)
+    selection = getattr(target_helpers, "TargetSelection", None)
+    if extract is None or selection is None:
+        return set()
+    return set(extract(hass, selection(call.data)))
+
+
 async def _resolve_targets(hass: HomeAssistant, call: ServiceCall) -> list:
     """Find the panels an action call targets, whether available or not.
 
@@ -77,8 +94,10 @@ async def _resolve_targets(hass: HomeAssistant, call: ServiceCall) -> list:
     Message, so they must still run then.
     """
     entities = _panel_entities(hass)
-    if call.data.get(ATTR_ENTITY_ID) in (ENTITY_MATCH_ALL, [ENTITY_MATCH_ALL]):
-        targets = list(entities)
+    target_all = call.data.get(ATTR_ENTITY_ID) in (ENTITY_MATCH_ALL, [ENTITY_MATCH_ALL])
+    if target_all:
+        excluded = _excluded_entity_ids(hass, call)
+        targets = [entity for entity in entities if entity.entity_id not in excluded]
     else:
         wanted = await service.async_extract_entity_ids(call)
         targets = [entity for entity in entities if entity.entity_id in wanted]
@@ -89,13 +108,21 @@ async def _resolve_targets(hass: HomeAssistant, call: ServiceCall) -> list:
         if user is None:
             raise UnknownUser(context=call.context)
         if not user.is_admin:
-            for entity in targets:
-                if not user.permissions.check_entity(entity.entity_id, POLICY_CONTROL):
-                    raise Unauthorized(
-                        context=call.context,
-                        entity_id=entity.entity_id,
-                        permission=POLICY_CONTROL,
-                    )
+            allowed = user.permissions.check_entity
+            if target_all:
+                # As Home Assistant does: "all" means all the user controls.
+                targets = [
+                    entity for entity in targets
+                    if allowed(entity.entity_id, POLICY_CONTROL)
+                ]
+            else:
+                for entity in targets:
+                    if not allowed(entity.entity_id, POLICY_CONTROL):
+                        raise Unauthorized(
+                            context=call.context,
+                            entity_id=entity.entity_id,
+                            permission=POLICY_CONTROL,
+                        )
 
     if not targets:
         raise ServiceValidationError(

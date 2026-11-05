@@ -64,6 +64,8 @@ def patched(monkeypatch):
         raising=False,
     )
     monkeypatch.setattr(services.cv, "make_entity_service_schema", lambda s: s, raising=False)
+    monkeypatch.setattr(services, "ATTR_ENTITY_ID", "entity_id")
+    monkeypatch.setattr(services, "ENTITY_MATCH_ALL", "all")
 
 
 def test_unavailable_panel_still_gets_the_action(patched):
@@ -169,3 +171,65 @@ def test_message_registers_itself_as_a_panel():
     for remove in removers:
         remove()
     assert entity not in hass.data[DATA_PANEL_ENTITIES]
+
+
+class User:
+    is_admin = False
+
+    def __init__(self, allowed):
+        self.permissions = SimpleNamespace(check_entity=lambda eid, policy: eid in allowed)
+
+
+def user_hass(user, *panels):
+    hass = make_hass(*panels)
+
+    async def get_user(user_id):
+        return user
+
+    hass.auth = SimpleNamespace(async_get_user=get_user)
+    return hass
+
+
+def test_all_with_exclude_skips_the_excluded_panel(patched, monkeypatch):
+    kept = FakePanel("text.kept")
+    excluded = FakePanel("text.excluded")
+    hass = make_hass(kept, excluded)
+    monkeypatch.setattr(services, "_excluded_entity_ids", lambda hass, call: {"text.excluded"})
+    services._register_panel_action(hass, "show_slot", schema={}, func="async_show_slot")
+
+    asyncio.run(hass.services.handlers["show_slot"](make_call({"entity_id": "all", "slot": 3})))
+
+    assert kept.calls == [3]
+    assert excluded.calls == []
+
+
+def test_all_for_a_limited_user_reaches_only_their_panels(patched, monkeypatch):
+    mine = FakePanel("text.mine")
+    theirs = FakePanel("text.theirs")
+    hass = user_hass(User({"text.mine"}), mine, theirs)
+    monkeypatch.setattr(services, "_excluded_entity_ids", lambda hass, call: set())
+    services._register_panel_action(hass, "show_slot", schema={}, func="async_show_slot")
+    call = make_call({"entity_id": "all", "slot": 4})
+    call.context.user_id = "u1"
+
+    asyncio.run(hass.services.handlers["show_slot"](call))
+
+    assert mine.calls == [4]
+    assert theirs.calls == []
+
+
+def test_naming_a_panel_the_user_cannot_control_is_refused(patched, monkeypatch):
+    theirs = FakePanel("text.theirs")
+    hass = user_hass(User(set()), theirs)
+    class Unauthorized(Exception):
+        def __init__(self, **kwargs):
+            super().__init__(kwargs)
+
+    monkeypatch.setattr(services, "Unauthorized", Unauthorized)
+    services._register_panel_action(hass, "show_slot", schema={}, func="async_show_slot")
+    call = make_call({"entity_id": ["text.theirs"], "slot": 1})
+    call.context.user_id = "u1"
+
+    with pytest.raises(services.Unauthorized):
+        asyncio.run(hass.services.handlers["show_slot"](call))
+    assert theirs.calls == []
