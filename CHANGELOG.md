@@ -141,6 +141,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Slot Show and Slot Clear, so the device page lists them as one block,
   with the Slot number first. Existing entity ids do not change. The
   dashboard card example in the README gains a Slots section.
+- **Settings shared by text and textimage mode use a `Message` prefix.**
+  Text Font, Text Color and Text Background Color are now Message Font,
+  Message Color and Message Background Color, so the `Text` prefix means
+  text mode only and `Image` means textimage only. Entity ids do not
+  change.
 
 ## [2.6.0] - 2026-11-04
 

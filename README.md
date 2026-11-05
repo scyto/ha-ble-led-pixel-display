@@ -257,12 +257,23 @@ Home Assistant usually discovers it by itself and offers it under **Settings →
 
 ## Entities you get
 
-Entity names start with the panel's name (for example *LED_BLE_7E9E1E82 Text
-Font*), and the device page splits them into three sections. The everyday
-controls sit at the top. The settings are under **Configuration**, where the
-alphabetical sort groups them by mode through their `Clock`, `Image` and
-`Text` prefixes. Settings in Configuration are also not offered to voice
-assistants by default.
+Entity names start with the panel's name (for example *LED_BLE_7E9E1E82
+Message Font*), and the device page splits them into three sections. The
+everyday controls sit at the top. The settings are under **Configuration**.
+Home Assistant gives integrations no separators or sub-groups there and
+sorts by name, so the names carry the grouping:
+
+| Prefix | Applies to |
+| --- | --- |
+| `Clock` | `clock` mode |
+| `Image` | `textimage` mode only |
+| `Message` | how the message looks in both `text` and `textimage` |
+| `Slot` | stored slots |
+| `Text` | `text` mode only |
+
+For real separators, use the [dashboard card](#a-dashboard-card-that-follows-the-mode)
+below. Settings in Configuration are also not offered to voice assistants by
+default.
 
 **Controls**
 
@@ -283,8 +294,8 @@ assistants by default.
 | **Clock Sync Time** | `button` | `clock` | Sets the device clock |
 | **Image Antialiasing** | `switch` | `textimage` | Smoothing |
 | **Image Font Size**, **Image Line Spacing** | `number` | `textimage` | Layout |
-| **Text Font** | `select` | `text`, `textimage` | TTF/OTF fonts, see [Fonts](#fonts) |
-| **Text Color**, **Text Background Color** | `light` | `text`, `textimage` | Colours as RGB |
+| **Message Font** | `select` | `text`, `textimage` | TTF/OTF fonts, see [Fonts](#fonts) |
+| **Message Color**, **Message Background Color** | `light` | `text`, `textimage` | Colours as RGB |
 | **Text Size** | `select` | `text` | Character height |
 | **Text Effect**, **Text Gradient** | `select` | `text` | Scrolling, effects and colour ramps |
 | **Text Speed** | `number` | `text` | Effect speed |
@@ -558,7 +569,7 @@ Four coloured quadrants — verifies resolution and colour channel order in one 
 
 ## Fonts
 
-Fonts are picked in the **Text Font** select entity and looked up in this order:
+Fonts are picked in the **Message Font** select entity and looked up in this order:
 
 1. `/config/fonts/` — your own fonts (create the folder if it does not exist)
 2. `custom_components/ble_led_pixel/fonts/` — shipped with the integration
