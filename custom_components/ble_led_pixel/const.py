@@ -4,12 +4,6 @@ DOMAIN = "ble_led_pixel"
 
 # Every loaded panel's Message entity, which carries the panel actions.
 DATA_PANEL_ENTITIES = f"{DOMAIN}_panel_entities"
-
-# Slots users can save to and show. Slot 10 is reserved: showing a slot saves
-# a blank there first, because that is the only way found to release the
-# screen from unsaved content (see docs/protocol.md, A.8).
-MAX_USER_SLOT = 9
-SCRATCH_SLOT = 10
 DEFAULT_NAME = "LED Pixel Display"
 
 # Bluetooth UUIDs from protocol documentation

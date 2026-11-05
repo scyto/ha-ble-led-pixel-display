@@ -3,10 +3,9 @@ show_slot:
   description: >
     Display content already stored on the panel, without sending it again.
     Store it first using the "save slot" field of send_text, send_image_file
-    or send_mdi_icon. The integration saves a blank to the reserved slot 10
-    first, because that is what makes the panel return to its stored content;
-    it briefly shows the first stored slot on the way. Showing an empty slot
-    makes the panel cycle through the slots that do hold something.
+    or send_mdi_icon. Works after unsaved content too: the integration first
+    switches the panel back to its stored content. Showing an empty slot makes
+    the panel cycle through the slots that do hold something.
   target:
     entity:
       integration: ble_led_pixel
@@ -146,13 +145,13 @@ send_mdi_icon:
           unit_of_measurement: "%"
     save_slot:
       name: Save Slot
-      description: Device memory slot to save the icon to (0 = don't save; slot 10 is reserved)
+      description: Device memory slot to save the icon to (0 = don't save)
       required: false
       default: 0
       selector:
         number:
           min: 0
-          max: 9
+          max: 10
 
 send_text:
   name: Send Text
@@ -263,14 +262,14 @@ send_text:
     save_slot:
       name: Save Slot
       description: >-
-        Also store the text in this memory slot (1-9) on the panel, so it can
+        Also store the text in this memory slot (1-10) on the panel, so it can
         be shown again with show_slot without resending it. 0 = don't save.
       required: false
       default: 0
       selector:
         number:
           min: 0
-          max: 9
+          max: 10
 
 send_test_pattern:
   name: "[DIAGNOSTIC] Send Test Pattern"
@@ -644,13 +643,13 @@ send_layout:
         color_rgb:
     save_slot:
       name: Save Slot
-      description: Device memory slot to store the picture in (0 = do not store; slot 10 is reserved)
+      description: Device memory slot to store the picture in (0 = do not store)
       required: false
       default: 0
       selector:
         number:
           min: 0
-          max: 9
+          max: 10
 
 send_image_file:
   name: Send Image File
@@ -685,13 +684,13 @@ send_image_file:
             - "fit"
     save_slot:
       name: Save Slot
-      description: Device memory slot to store the picture in (0 = do not store; slot 10 is reserved)
+      description: Device memory slot to store the picture in (0 = do not store)
       required: false
       default: 0
       selector:
         number:
           min: 0
-          max: 9
+          max: 10
 show_preset:
   name: Show preset
   description: >-

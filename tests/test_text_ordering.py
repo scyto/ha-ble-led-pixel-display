@@ -136,15 +136,14 @@ def test_older_text_does_not_overwrite_newer_non_text_content():
         old = asyncio.create_task(api.display_text_pypixelcolor("old"))
         await asyncio.sleep(0)
         # An image, slot, emoji or clock request arrives while the text renders.
-        show = asyncio.create_task(api.show_slot(1))
-        await asyncio.sleep(0)
-        api._hass.pending[" "].set()  # the blank saved to the scratch slot
-        assert await show
+        assert await api.show_slot(1)
         api._hass.pending["old"].set()
         assert await old
         return api._bluetooth.sent
 
-    assert asyncio.run(scenario()) == [" ", "other content"]
+    api_module.SHOW_SLOT_SETTLE = 0
+    # DIY off, then the select; the older text is dropped.
+    assert asyncio.run(scenario()) == ["other content", "other content"]
 
 
 def test_any_display_request_supersedes_earlier_ones():

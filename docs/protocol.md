@@ -1314,19 +1314,23 @@ is ignored by the unbranded 64x20 panel (product 000105).
 **The panel obeys the list only while it plays stored content.** Probed on the
 64x20 panel on 2026-11-05 with `send_raw_command`:
 
-- After any unsaved send (`save_slot` 0) the panel holds that content. It
-  acknowledges `0x8008` with `05 00 08 80 01` and ignores it. So do
-  `04 00 01 01` (exit), display off and on (`0x0107`), and deleting slot 0 or
-  an empty slot first.
-- Any send saved to a slot (`save_slot` ≥ 1) puts the panel back into playing
-  stored content, starting at the first stored slot -- not the slot just
-  written.
-- From there, `07 00 08 80 01 00 <n>` holds slot `n` until the next send.
+- After any unsaved send (`save_slot` 0) the play list is halted and the panel
+  holds that content. It acknowledges `0x8008` with `05 00 08 80 01` (`01` is
+  OK) and ignores it. So do `04 00 01 01` (exit), display off and on
+  (`0x0107`), `05 00 12 80 01` / `05 00 12 80 07`, and deleting slot 0 or an
+  empty slot first.
+- **DIY mode off, `05 00 04 01 00` (`0x0104`), restarts the play list.** The
+  panel answers `05 00 04 01 01` and shows the stored slot it played last;
+  `07 00 08 80 01 00 <n>` sent a second later then holds slot `n`.
+  Confirmed twice, for slots 3 and 1.
+- A send saved to a slot (`save_slot` ≥ 1) also restarts the play list,
+  starting at the first stored slot.
 
-The integration therefore shows a slot by saving a blank to a reserved scratch
-slot (10) and then sending the list. The panel briefly shows the first stored
-slot in between. A cleaner way out of unsaved content may exist; none of the
-documented commands is it.
+The integration shows a slot by sending DIY off, waiting a second, then the
+select. The community
+[ESPHome component](https://github.com/DonKracho/ESPHome-component-iPixel-ble)
+documents the halt: slot 0 and slots above 100 are applied immediately and stop
+the play list.
 
 Showing an empty slot does not blank the panel: it cycles through the slots
 that do hold something. The number of slots is not documented anywhere and the

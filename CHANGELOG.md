@@ -131,18 +131,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Show Slot works on the 64x20 panel.** Probed on the hardware: the panel
-  obeys the show frame only while it plays stored content, and any unsaved
-  send stops that. Saving to a slot is the one thing found that restarts it.
-  Show Slot (the button and `show_slot`) now saves a blank to a reserved slot,
-  then sends pypixelcolor's seven-byte frame `07 00 08 80 01 00 nn`, which
-  2.6.1 had wrongly replaced. The panel briefly shows the first stored slot
-  on the way. Details in docs/protocol.md, A.8.
-
-### Changed
-
-- **Slot 10 is reserved.** The Slot number and every `save_slot` field now go
-  up to 9. Anything already stored in slot 10 is overwritten by the next Show.
+- **Show Slot works on the 64x20 panel.** Probed on the hardware: any unsaved
+  send halts the panel's stored play list, and while it is halted the show
+  frame is acknowledged and ignored. Show Slot (the button and `show_slot`)
+  now first turns DIY mode off (`05 00 04 01 00`), which restarts the play
+  list, and then sends pypixelcolor's seven-byte frame `07 00 08 80 01 00 nn`,
+  which 2.6.1 had wrongly replaced. The panel briefly shows the stored slot
+  it played last on the way. Details in docs/protocol.md, A.8.
 
 ## [2.7.1] - 2026-11-05
 

@@ -13,11 +13,7 @@ from homeassistant.exceptions import HomeAssistantError  # noqa: E402
 
 from custom_components.ble_led_pixel import button, common, number  # noqa: E402
 from custom_components.ble_led_pixel import api as api_module  # noqa: E402
-from custom_components.ble_led_pixel.const import (  # noqa: E402
-    MAX_USER_SLOT,
-    MODE_CLOCK,
-    SCRATCH_SLOT,
-)
+from custom_components.ble_led_pixel.const import MODE_CLOCK  # noqa: E402
 from tests.test_text_ordering import make_api  # noqa: E402
 
 
@@ -104,77 +100,41 @@ def test_rendered_text_reaches_the_slot(monkeypatch):
     assert api._bluetooth.sent == ["other content"]
 
 
-def show_slot_log(monkeypatch, slot):
-    """Run show_slot and return what reached the panel, in order."""
-    log = []
-
-    def text_command(**kwargs):
-        log.append(("render", kwargs["text"], kwargs["save_slot"]))
-        return "blank plan"
-
-    monkeypatch.setattr(api_module, "make_text_command", text_command)
-    monkeypatch.setattr(api_module, "resolve_font_for_library", lambda name: "/font.ttf")
+def test_show_slot_turns_diy_off_then_selects(monkeypatch):
+    # After any unsaved send the panel ignores the select until DIY mode is
+    # turned off. Probed on the 64x20 panel (docs/protocol.md, A.8).
+    monkeypatch.setattr(api_module, "SHOW_SLOT_SETTLE", 0)
     api = make_api()
-
-    async def run_now(job):
-        return job()
-
-    api._hass.async_add_executor_job = run_now
-
-    async def send_plan(plan, ack_timeout=None, still_current=None):
-        log.append(("plan", plan))
-        return True
+    sent = []
 
     async def send_command(command, content=False, still_current=None):
-        log.append(("command", command, content))
+        sent.append((command, content))
         return True
 
-    api._bluetooth.send_plan = send_plan
     api._bluetooth.send_command = send_command
-    assert asyncio.run(api.show_slot(slot))
-    return log
-
-
-def test_show_slot_saves_a_blank_to_the_scratch_slot_then_selects(monkeypatch):
-    # The select frame is ignored after any unsaved send; saving to a slot is
-    # the one thing found that releases the screen. Probed on the 64x20 panel.
-    assert show_slot_log(monkeypatch, 3) == [
-        ("render", " ", SCRATCH_SLOT),
-        ("plan", "blank plan"),
-        ("command", bytes([0x07, 0x00, 0x08, 0x80, 0x01, 0x00, 0x03]), True),
+    assert asyncio.run(api.show_slot(3))
+    assert sent == [
+        (bytes([0x05, 0x00, 0x04, 0x01, 0x00]), True),
+        (bytes([0x07, 0x00, 0x08, 0x80, 0x01, 0x00, 0x03]), True),
     ]
 
 
-def test_scratch_write_is_retried_once_after_a_dropped_link(monkeypatch):
-    monkeypatch.setattr(api_module, "make_text_command", lambda **kwargs: "blank plan")
-    monkeypatch.setattr(api_module, "resolve_font_for_library", lambda name: "/font.ttf")
+def test_show_slot_fails_when_diy_off_cannot_be_sent(monkeypatch):
+    monkeypatch.setattr(api_module, "SHOW_SLOT_SETTLE", 0)
     api = make_api()
-
-    async def run_now(job):
-        return job()
-
-    api._hass.async_add_executor_job = run_now
-    attempts = []
     sent = []
-
-    async def send_plan(plan, ack_timeout=None, still_current=None):
-        attempts.append(plan)
-        return len(attempts) > 1  # the first write dies with the link
 
     async def send_command(command, content=False, still_current=None):
         sent.append(command)
-        return True
+        return False
 
-    api._bluetooth.send_plan = send_plan
+    async def no_link():
+        return False
+
     api._bluetooth.send_command = send_command
-    assert asyncio.run(api.show_slot(2))
-    assert attempts == ["blank plan", "blank plan"]
-    assert sent == [bytes([0x07, 0x00, 0x08, 0x80, 0x01, 0x00, 0x02])]
-
-
-def test_scratch_slot_is_outside_the_users_range():
-    assert SCRATCH_SLOT > MAX_USER_SLOT
-    assert number.BleLedPixelSlot._attr_native_max_value == MAX_USER_SLOT
+    api.ensure_connected = no_link
+    assert not asyncio.run(api.show_slot(3))
+    assert sent == [bytes([0x05, 0x00, 0x04, 0x01, 0x00])]
 
 
 def test_slot_controls_sort_together_with_the_number_first():

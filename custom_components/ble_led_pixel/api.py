@@ -59,7 +59,6 @@ from .display.emoji_renderer import render_emoji_to_png
 from .const import RECONNECT_BACKOFF_START, RECONNECT_BACKOFF_MAX
 from .exceptions import BleLedPixelConnectionError, BleLedPixelFeatureUnsupported
 from .const import (
-    SCRATCH_SLOT,
     OPT_FORCE_FEATURES,
     OPT_PASSWORD,
     OPT_VERTICAL_SCROLL,
@@ -80,13 +79,22 @@ _LOGGER = logging.getLogger(__name__)
 # vendor app). See docs/protocol.md, A.8.
 DELETE_ALL_COMMAND = bytes([0x04, 0x00, 0x03, 0x80])
 
+# DIY mode off (opcode 0x0104, setDiyFunMode 0). Any unsaved send halts the
+# stored play list and the panel then ignores 0x8008; this puts it back on
+# its stored content. Probed on the 64x20 panel, see docs/protocol.md, A.8.
+DIY_OFF_COMMAND = bytes([0x05, 0x00, 0x04, 0x01, 0x00])
+
+# How long the panel is given between DIY off and the select, as probed.
+SHOW_SLOT_SETTLE = 1.0
+
 
 def show_slot_command(slot: int) -> bytes:
     """Frame that selects stored slots to play (opcode 0x8008).
 
     ``07 00 08 80 01 00 nn`` is a one-entry play list, as pypixelcolor sends
     it. The panel only obeys it while it is playing stored content; after an
-    unsaved send it acknowledges and ignores it. The vendor app's
+    unsaved send it acknowledges and ignores it until DIY mode is turned off
+    (DIY_OFF_COMMAND). The vendor app's
     ``05 00 08 80 nn`` is ignored outright by the 64x20 panel. See
     docs/protocol.md, A.8.
     """
@@ -1403,11 +1411,10 @@ class BleLedPixelAPI:
     async def show_slot(self, slot: int) -> bool:
         """Display content already stored on the panel.
 
-        The select frame only works while the panel plays stored content,
-        and any unsaved send stops that. Nothing found releases the screen
-        except saving to a slot, so a blank is saved to the reserved scratch
-        slot first; the select frame then picks the slot wanted. The panel
-        briefly shows the first stored slot in between.
+        Any unsaved send halts the panel's stored play list, and while it is
+        halted the select frame is acknowledged and ignored. DIY mode off
+        restarts the play list, so it goes first; the select then picks the
+        slot. The panel briefly shows the stored slot it played last.
 
         Args:
             slot: Slot number. An empty slot makes the panel cycle through the
@@ -1418,31 +1425,12 @@ class BleLedPixelAPI:
         """
         still_current = self._claim_content()
         try:
-            blank = await self._hass.async_add_executor_job(
-                partial(
-                    make_text_command,
-                    text=" ",
-                    color="000000",
-                    bg_color="000000",
-                    font=resolve_font_for_library(None),
-                    save_slot=SCRATCH_SLOT,
-                    char_height=16,
-                )
-            )
-            # Like _send_with_reconnect: a link that dies mid-write gets one
-            # reconnect and retry, so a transient drop does not fail the action.
-            prepared = False
-            for _attempt in range(2):
-                if not await self.ensure_connected():
-                    break
-                if await self._bluetooth.send_plan(
-                    blank, ack_timeout=25.0, still_current=still_current
-                ):
-                    prepared = True
-                    break
-            if not prepared:
+            if not await self._send_with_reconnect(
+                DIY_OFF_COMMAND, content=True, still_current=still_current
+            ):
                 _LOGGER.error("Failed to prepare the panel to show slot %d", slot)
                 return False
+            await asyncio.sleep(SHOW_SLOT_SETTLE)
             success = await self._send_with_reconnect(
                 show_slot_command(slot), content=True, still_current=still_current
             )
