@@ -190,6 +190,8 @@ class BleLedPixelModeSelect(SelectEntity, RestoreEntity):
             # Before the update: it reads the settings' states, and those of
             # the new mode must be available again by then.
             self._api.set_current_mode(option)
+            if getattr(self, "hass", None) is not None and getattr(self, "entity_id", None):
+                self.async_write_ha_state()
 
             # Trigger display update if auto-update is enabled
             await self._trigger_auto_update()

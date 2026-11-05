@@ -157,3 +157,22 @@ def test_a_normal_last_state_wins():
     obj.last = SimpleNamespace(state="5", attributes={})
     obj.extra = _Stored({"state": "7"})
     assert asyncio.run(obj.async_get_last_state()).state == "5"
+
+
+def test_update_uses_the_mode_just_chosen(monkeypatch):
+    from custom_components.ble_led_pixel import common
+
+    async def stale_state(*args, **kwargs):
+        return "textimage"
+
+    seen = []
+
+    async def clock(hass, name, api):
+        seen.append("clock")
+        return True
+
+    monkeypatch.setattr(common, "_get_entity_setting", stale_state)
+    monkeypatch.setattr(common, "_update_clock_mode", clock)
+    api = SimpleNamespace(current_mode="clock", _address="AA:BB")
+    assert asyncio.run(common.update_panel_display(None, "Panel", api))
+    assert seen == ["clock"]
