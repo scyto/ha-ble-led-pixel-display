@@ -69,10 +69,8 @@ from .const import (
 )
 
 try:
-    from pypixelcolor.commands.show_slot import show_slot as pypixelcolor_show_slot
     from pypixelcolor.commands.delete import delete as pypixelcolor_delete
 except ImportError:
-    pypixelcolor_show_slot = None
     pypixelcolor_delete = None
 
 _LOGGER = logging.getLogger(__name__)
@@ -1341,12 +1339,12 @@ class BleLedPixelAPI:
                 _LOGGER.error("Failed to send test pattern")
                 return False
 
-            if pypixelcolor_show_slot is not None:
-                show_plan = pypixelcolor_show_slot(0)
-                shown = await self._bluetooth.send_plan(show_plan, still_current=still_current)
-                if not shown:
-                    _LOGGER.error("Failed to show_slot(0) after sending test pattern")
-                    return False
+            shown = await self._bluetooth.send_command(
+                show_slot_command(0), content=True, still_current=still_current
+            )
+            if not shown:
+                _LOGGER.error("Failed to show_slot(0) after sending test pattern")
+                return False
 
             _LOGGER.info("Test pattern sent (%dx%d), save_slot=0, shown via slot 0", width, height)
             return True

@@ -124,3 +124,17 @@ def test_slot_controls_sort_together_with_the_number_first():
     )
     assert names[0] == "Slot"
     assert all(name.startswith("Slot") for name in names)
+
+
+def test_test_pattern_shows_slot_0_with_the_vendor_apps_frame(monkeypatch):
+    monkeypatch.setattr(api_module, "make_image_command", lambda **kwargs: "plan")
+    api = make_api()
+    sent = []
+
+    async def send_command(command, content=False, still_current=None):
+        sent.append(command)
+        return True
+
+    api._bluetooth.send_command = send_command
+    assert asyncio.run(api.send_test_pattern())
+    assert sent == [bytes([0x05, 0x00, 0x08, 0x80, 0x00])]
