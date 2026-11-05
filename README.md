@@ -271,6 +271,8 @@ setting's name says which mode it applies to:
 | `Text Image Only:` | `textimage` mode only |
 | `Text Only:` | `text` mode only |
 
+Auto Update has no prefix because it applies in every mode.
+
 For real separators, use the [dashboard card](#a-dashboard-card-that-follows-the-mode)
 below. Settings in Configuration are also not offered to voice assistants by
 default.
@@ -297,7 +299,7 @@ default.
 | **Slot: Show**, **Slot: Clear** | `button` | all | Shows or erases the chosen slot. An empty slot makes the panel cycle through the filled ones, because the panel cannot report which slots are empty |
 | **Text & Image: Font** | `select` | `text`, `textimage` | TTF/OTF fonts, see [Fonts](#fonts) |
 | **Text & Image: Color**, **Text & Image: Background Color** | `light` | `text`, `textimage` | Colours as RGB |
-| **Text & Image: Auto Update** | `switch` | `text`, `textimage` | **Read [Avoiding flicker](#avoiding-flicker-how-updates-actually-work) before touching this** |
+| **Auto Update** | `switch` | all | **Read [Avoiding flicker](#avoiding-flicker-how-updates-actually-work) before touching this** |
 | **Text Image Only: Antialiasing** | `switch` | `textimage` | Smoothing |
 | **Text Image Only: Font Size**, **Text Image Only: Line Spacing** | `number` | `textimage` | Layout |
 | **Text Only: Size** | `select` | `text` | Character height |
@@ -332,6 +334,7 @@ cards:
       - number.led_ble_7e9e1e82_brightness
       - text.led_ble_7e9e1e82_message
       - button.led_ble_7e9e1e82_update_display
+      - switch.led_ble_7e9e1e82_auto_update
   - type: conditional
     conditions:
       - condition: state
@@ -346,7 +349,6 @@ cards:
         - select.led_ble_7e9e1e82_text_font
         - light.led_ble_7e9e1e82_text_color
         - light.led_ble_7e9e1e82_text_background_color
-        - switch.led_ble_7e9e1e82_auto_update
   - type: conditional
     conditions:
       - condition: state

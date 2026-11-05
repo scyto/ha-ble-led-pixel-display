@@ -137,8 +137,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   example Text Effect is now Text Only: Effect, Image Font Size is Text
   Image Only: Font Size, and Message Font is Text & Image: Font. Entity ids
   do not change.
+- Auto Update keeps its plain name: it applies in every mode, clock
+  included. The README card now shows it next to Update Display.
+
 - The README dashboard card's sections are titled Text & Text Image Mode,
   Text Mode Only and Text Image Mode Only.
+
+### Fixed
+
+- **Changing Text Only: Speed did not refresh the panel** when the panel's
+  entity ids differ from its name (for example after assigning it to an
+  area). The mode and Auto Update entities are now looked up by unique id.
 
 ## [2.6.1] - 2026-11-05
 

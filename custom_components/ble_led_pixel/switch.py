@@ -245,7 +245,7 @@ class BleLedPixelAutoUpdateSwitch(SwitchEntity, RestoreEntity):
         self._entry = entry
         self._address = address
         self._name = name
-        self._attr_name = "Text & Image: Auto Update"
+        self._attr_name = "Auto Update"
         self._attr_unique_id = f"{address}_auto_update"
         self._is_on = False  # Default to manual updates only
 
