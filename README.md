@@ -385,6 +385,10 @@ cards:
       - button.led_ble_7e9e1e82_slot_clear
 ```
 
+Entity ids are set when a panel is first added and later renames keep them.
+Panels added before 2.6.1 have `..._text_font`, `..._text_color` and
+`..._text_background_color`, as in the card above; panels added since get
+`..._message_font`, `..._message_color` and `..._message_background_color`.
 Panels that had 2.6.0 installed keep that release's slot button ids
 (`..._save_to_slot`, `..._show_slot`, `..._clear_slot`).
 
