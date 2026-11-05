@@ -1355,8 +1355,8 @@ class BleLedPixelAPI:
     async def show_slot(self, slot: int) -> bool:
         """Display a picture already stored on the panel.
 
-        Sends seven bytes instead of re-transmitting the image, which on a
-        32x32 panel means 7 bytes rather than 12288. Store pictures first with
+        Sends five bytes instead of re-transmitting the image, which on a
+        32x32 panel means 5 bytes rather than 12288. Store pictures first with
         the save_slot argument of send_image_file or send_mdi_icon.
 
         Args:
