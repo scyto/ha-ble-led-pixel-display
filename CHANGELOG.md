@@ -139,9 +139,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Notes
 
-- Show Slot takes about 5 seconds to appear on the 64x20 panel: the panel
-  restarts its play list before it jumps to the slot. Pressing again in that
-  window starts it over.
+- Switching from one stored slot to another takes about 5 seconds to appear
+  on the 64x20 panel, while the panel restarts its play list; from unsaved
+  content (text sent from Home Assistant) it is instant. Pressing again in
+  that window starts it over. Now noted in the README and the show_slot
+  action.
 
 ## [2.8.0] - 2026-11-05
 
