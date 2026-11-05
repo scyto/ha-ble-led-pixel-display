@@ -127,6 +127,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   board" sold by Action, 13x13 cm and 32x32 pixels. The vendor's own brand
   grouping does not list the `0007` group at all, so this came from hardware.
 
+## [2.8.0] - 2026-11-05
+
+### Fixed
+
+- **Show Slot works on the 64x20 panel.** Probed on the hardware: the panel
+  obeys the show frame only while it plays stored content, and any unsaved
+  send stops that. Saving to a slot is the one thing found that restarts it.
+  Show Slot (the button and `show_slot`) now saves a blank to a reserved slot,
+  then sends pypixelcolor's seven-byte frame `07 00 08 80 01 00 nn`, which
+  2.6.1 had wrongly replaced. The panel briefly shows the first stored slot
+  on the way. Details in docs/protocol.md, A.8.
+
+### Changed
+
+- **Slot 10 is reserved.** The Slot number and every `save_slot` field now go
+  up to 9. Anything already stored in slot 10 is overwritten by the next Show.
+
 ## [2.7.1] - 2026-11-05
 
 ### Added

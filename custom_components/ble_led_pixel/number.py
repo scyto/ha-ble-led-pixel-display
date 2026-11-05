@@ -16,7 +16,7 @@ from .const import DOMAIN, CONF_ADDRESS, CONF_NAME
 from .entity import ModeScopedEntity, panel_device_info
 from .common import get_entity_id_by_unique_id
 
-from .const import MODE_CLOCK, MODE_TEXT, MODE_TEXT_IMAGE
+from .const import MAX_USER_SLOT, MODE_CLOCK, MODE_TEXT, MODE_TEXT_IMAGE
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -48,7 +48,7 @@ class BleLedPixelSlot(NumberEntity, RestoreEntity):
 
     _attr_mode = NumberMode.BOX
     _attr_native_min_value = 1
-    _attr_native_max_value = 10
+    _attr_native_max_value = MAX_USER_SLOT  # 10 is reserved, see const.py
     _attr_native_step = 1
     _attr_icon = "mdi:numeric"
 

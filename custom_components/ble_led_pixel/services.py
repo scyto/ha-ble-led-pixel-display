@@ -30,7 +30,7 @@ from homeassistant.exceptions import ServiceValidationError, Unauthorized, Unkno
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import service
 
-from .const import DATA_PANEL_ENTITIES, DOMAIN
+from .const import DATA_PANEL_ENTITIES, DOMAIN, MAX_USER_SLOT
 
 ICON_ITEM_SCHEMA = vol.Schema({
     vol.Required("icon"): cv.string,
@@ -247,7 +247,7 @@ def async_setup_services(hass: HomeAssistant) -> None:
                 vol.Coerce(int), vol.Range(min=1, max=100)
             ),
             vol.Optional("save_slot", default=0): vol.All(
-                vol.Coerce(int), vol.Range(min=0, max=10)
+                vol.Coerce(int), vol.Range(min=0, max=MAX_USER_SLOT)
             ),
         },
         func="async_send_mdi_icon",
@@ -281,7 +281,7 @@ def async_setup_services(hass: HomeAssistant) -> None:
                 vol.Coerce(int), vol.Range(min=0, max=100)
             ),
             vol.Optional("save_slot", default=0): vol.All(
-                vol.Coerce(int), vol.Range(min=0, max=10)
+                vol.Coerce(int), vol.Range(min=0, max=MAX_USER_SLOT)
             ),
             vol.Optional("rainbow_mode", default=0): vol.All(
                 vol.Coerce(int), vol.Range(min=0, max=9)
@@ -354,7 +354,7 @@ def async_setup_services(hass: HomeAssistant) -> None:
                 vol.ExactSequence([cv.byte, cv.byte, cv.byte]), vol.Coerce(tuple)
             ),
             vol.Optional("save_slot", default=0): vol.All(
-                vol.Coerce(int), vol.Range(min=0, max=10)
+                vol.Coerce(int), vol.Range(min=0, max=MAX_USER_SLOT)
             ),
         },
         func="async_send_layout",
@@ -367,7 +367,7 @@ def async_setup_services(hass: HomeAssistant) -> None:
             vol.Required("file_path"): cv.string,
             vol.Optional("resize_method", default="crop"): vol.In(["crop", "fit"]),
             vol.Optional("save_slot", default=0): vol.All(
-                vol.Coerce(int), vol.Range(min=0, max=10)
+                vol.Coerce(int), vol.Range(min=0, max=MAX_USER_SLOT)
             ),
         },
         func="async_send_image_file",

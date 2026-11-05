@@ -1295,24 +1295,38 @@ commands are in `pypixelcolor` but no integration exposed them:
 
 | Action | Frame | Opcode |
 |---|---|---|
-| Show slot | `05 00 08 80 <n>` | `0x8008` |
+| Show slot | `07 00 08 80 01 00 <n>` | `0x8008` |
 | Delete slot | `07 00 02 01 01 00 <n>` | `0x0102` |
 | Delete everything | `04 00 03 80` | `0x8003` |
 
 Writing is already covered: `send_image_file` and `send_mdi_icon` take a
 `save_slot` argument that stores the picture as it is sent.
 
-Showing a stored picture costs **five bytes**. Sending the same picture costs
-a full frame buffer -- 12288 bytes on a 32×32 panel. For anything that cycles
-through a fixed set of pictures, storing them once and switching by slot number
-is dramatically cheaper over Bluetooth.
+Showing a stored picture costs **seven bytes**. Sending the same picture
+costs a full frame buffer -- 12288 bytes on a 32×32 panel. For anything that
+cycles through a fixed set of pictures, storing them once and switching by slot
+number is dramatically cheaper over Bluetooth.
 
-pypixelcolor sends the seven-byte form `07 00 08 80 01 00 <n>` (a one-entry
-slot list). The integration sends the app's five-byte form since 2.6.1. **On
-the unbranded 64x20 panel (product 000105) neither form has shown a stored
-slot yet**, although saving to a slot works and the panel boots into slot 1.
-Which frame that panel accepts is still open; the `send_raw_command` action
-exists to try candidates on the hardware and read the replies.
+`0x8008` is a play list: `LL 00 08 80 <count lo> <count hi> <slot>…`, so the
+seven-byte frame is a list of one. The vendor app's five-byte `05 00 08 80 <n>`
+is ignored by the unbranded 64x20 panel (product 000105).
+
+**The panel obeys the list only while it plays stored content.** Probed on the
+64x20 panel on 2026-11-05 with `send_raw_command`:
+
+- After any unsaved send (`save_slot` 0) the panel holds that content. It
+  acknowledges `0x8008` with `05 00 08 80 01` and ignores it. So do
+  `04 00 01 01` (exit), display off and on (`0x0107`), and deleting slot 0 or
+  an empty slot first.
+- Any send saved to a slot (`save_slot` ≥ 1) puts the panel back into playing
+  stored content, starting at the first stored slot -- not the slot just
+  written.
+- From there, `07 00 08 80 01 00 <n>` holds slot `n` until the next send.
+
+The integration therefore shows a slot by saving a blank to a reserved scratch
+slot (10) and then sending the list. The panel briefly shows the first stored
+slot in between. A cleaner way out of unsaved content may exist; none of the
+documented commands is it.
 
 Showing an empty slot does not blank the panel: it cycles through the slots
 that do hold something. The number of slots is not documented anywhere and the

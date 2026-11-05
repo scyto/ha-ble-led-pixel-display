@@ -59,6 +59,7 @@ from .display.emoji_renderer import render_emoji_to_png
 from .const import RECONNECT_BACKOFF_START, RECONNECT_BACKOFF_MAX
 from .exceptions import BleLedPixelConnectionError, BleLedPixelFeatureUnsupported
 from .const import (
+    SCRATCH_SLOT,
     OPT_FORCE_FEATURES,
     OPT_PASSWORD,
     OPT_VERTICAL_SCROLL,
@@ -81,13 +82,15 @@ DELETE_ALL_COMMAND = bytes([0x04, 0x00, 0x03, 0x80])
 
 
 def show_slot_command(slot: int) -> bytes:
-    """Frame that shows a stored slot (opcode 0x8008), as the vendor app sends it.
+    """Frame that selects stored slots to play (opcode 0x8008).
 
-    pypixelcolor sends ``07 00 08 80 01 00 nn`` -- a one-entry slot list --
-    which the unbranded 64x20 panel (product 000105) ignores. The decompiled
-    app sends ``05 00 08 80 nn``; see docs/protocol.md, C.2.
+    ``07 00 08 80 01 00 nn`` is a one-entry play list, as pypixelcolor sends
+    it. The panel only obeys it while it is playing stored content; after an
+    unsaved send it acknowledges and ignores it. The vendor app's
+    ``05 00 08 80 nn`` is ignored outright by the 64x20 panel. See
+    docs/protocol.md, A.8.
     """
-    return bytes([0x05, 0x00, 0x08, 0x80, slot & 0xFF])
+    return bytes([0x07, 0x00, 0x08, 0x80, 0x01, 0x00, slot & 0xFF])
 
 
 class BleLedPixelAPI:
@@ -1398,21 +1401,42 @@ class BleLedPixelAPI:
         return log
 
     async def show_slot(self, slot: int) -> bool:
-        """Display a picture already stored on the panel.
+        """Display content already stored on the panel.
 
-        Sends five bytes instead of re-transmitting the image, which on a
-        32x32 panel means 5 bytes rather than 12288. Store pictures first with
-        the save_slot argument of send_image_file or send_mdi_icon.
+        The select frame only works while the panel plays stored content,
+        and any unsaved send stops that. Nothing found releases the screen
+        except saving to a slot, so a blank is saved to the reserved scratch
+        slot first; the select frame then picks the slot wanted. The panel
+        briefly shows the first stored slot in between.
 
         Args:
             slot: Slot number. An empty slot makes the panel cycle through the
                 slots that do hold something, rather than showing nothing.
 
         Returns:
-            True when the command was sent.
+            True when both writes were sent.
         """
         still_current = self._claim_content()
         try:
+            blank = await self._hass.async_add_executor_job(
+                partial(
+                    make_text_command,
+                    text=" ",
+                    color="000000",
+                    bg_color="000000",
+                    font=resolve_font_for_library(None),
+                    save_slot=SCRATCH_SLOT,
+                    char_height=16,
+                )
+            )
+            if not await self.ensure_connected():
+                _LOGGER.error("Cannot connect to show slot %d", slot)
+                return False
+            if not await self._bluetooth.send_plan(
+                blank, ack_timeout=25.0, still_current=still_current
+            ):
+                _LOGGER.error("Failed to prepare the panel to show slot %d", slot)
+                return False
             success = await self._send_with_reconnect(
                 show_slot_command(slot), content=True, still_current=still_current
             )

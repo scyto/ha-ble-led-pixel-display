@@ -302,7 +302,7 @@ default.
 | **Clock: 24h**, **Clock: Show Date** | `switch` | `clock` | Clock options |
 | **Clock: Style** | `select` | `clock` | 9 clock faces |
 | **Clock: Sync Time** | `button` | `clock` | Sets the device clock |
-| **Slot** | `number` | all | Slot 1–10 that the slot buttons below act on |
+| **Slot** | `number` | all | Slot 1–9 that the slot buttons below act on. Slot 10 is reserved: Show saves a blank there to bring the panel back to its stored content |
 | **Slot: Save** | `button` | `text`, `textimage` | Sends the current message and keeps a copy in the chosen slot |
 | **Slot: Show**, **Slot: Clear** | `button` | all | Shows or erases the chosen slot. An empty slot makes the panel cycle through the filled ones, because the panel cannot report which slots are empty |
 | **Text & Image: Font** | `select` | `text`, `textimage` | TTF/OTF fonts, see [Fonts](#fonts) |

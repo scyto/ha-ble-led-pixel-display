@@ -213,7 +213,7 @@ class BleLedPixelTextDisplay(ModeScopedEntity, TextEntity, RestoreEntity):
                 32x32 panels or when turned on in the options.
             speed: Animation speed (0-100).
             rainbow_mode: Rainbow color-cycling mode (0-9).
-            save_slot: If 1-10, also store the text in that slot on the panel.
+            save_slot: If 1-9, also store the text in that slot on the panel.
         """
         if (
             animation in VERTICAL_TEXT_EFFECTS.values()
