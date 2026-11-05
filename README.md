@@ -289,9 +289,9 @@ assistants by default.
 | **Text Effect**, **Text Gradient** | `select` | `text` | Scrolling, effects and colour ramps |
 | **Text Speed** | `number` | `text` | Effect speed |
 | **Auto Update** | `switch` | `text`, `textimage` | **Read [Avoiding flicker](#avoiding-flicker-how-updates-actually-work) before touching this** |
-| **Slot** | `number` | all | Slot 1–10 that the three slot buttons act on |
-| **Save to Slot** | `button` | `text`, `textimage` | Sends the current message and keeps a copy in the chosen slot |
-| **Show Slot**, **Clear Slot** | `button` | all | Shows or erases the chosen slot. An empty slot makes the panel cycle through the filled ones, because the panel cannot report which slots are empty |
+| **Slot** | `number` | all | Slot 1–10 that the slot buttons below act on |
+| **Slot Save** | `button` | `text`, `textimage` | Sends the current message and keeps a copy in the chosen slot |
+| **Slot Show**, **Slot Clear** | `button` | all | Shows or erases the chosen slot. An empty slot makes the panel cycle through the filled ones, because the panel cannot report which slots are empty |
 
 **Diagnostic**: Device Type, Display Width, Display Height, firmware versions,
 Product ID, Brand, Supported features, Password protection.
@@ -365,7 +365,17 @@ cards:
         - switch.led_ble_7e9e1e82_clock_24h
         - switch.led_ble_7e9e1e82_clock_show_date
         - button.led_ble_7e9e1e82_clock_sync_time
+  - type: entities
+    title: Slots
+    entities:
+      - number.led_ble_7e9e1e82_slot
+      - button.led_ble_7e9e1e82_slot_save
+      - button.led_ble_7e9e1e82_slot_show
+      - button.led_ble_7e9e1e82_slot_clear
 ```
+
+Panels that had 2.6.0 installed keep that release's slot button ids
+(`..._save_to_slot`, `..._show_slot`, `..._clear_slot`).
 
 ## Display modes
 

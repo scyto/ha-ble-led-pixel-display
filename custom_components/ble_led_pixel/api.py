@@ -82,6 +82,16 @@ _LOGGER = logging.getLogger(__name__)
 DELETE_ALL_COMMAND = bytes([0x04, 0x00, 0x03, 0x80])
 
 
+def show_slot_command(slot: int) -> bytes:
+    """Frame that shows a stored slot (opcode 0x8008), as the vendor app sends it.
+
+    pypixelcolor sends ``07 00 08 80 01 00 nn`` -- a one-entry slot list --
+    which the unbranded 64x20 panel (product 000105) ignores. The decompiled
+    app sends ``05 00 08 80 nn``; see docs/protocol.md, C.2.
+    """
+    return bytes([0x05, 0x00, 0x08, 0x80, slot & 0xFF])
+
+
 class BleLedPixelAPI:
     """BLE LED pixel panel API client - simplified facade."""
 
@@ -1359,19 +1369,18 @@ class BleLedPixelAPI:
             True when the command was sent.
         """
         still_current = self._claim_content()
-        if pypixelcolor_show_slot is None:
-            _LOGGER.error("pypixelcolor is not available")
-            return False
         try:
-            success = await self._bluetooth.send_plan(pypixelcolor_show_slot(slot), still_current=still_current)
-            if success:
-                _LOGGER.debug("Showing slot %d", slot)
-            else:
-                _LOGGER.error("Failed to show slot %d", slot)
-            return success
-        except Exception as err:
+            success = await self._send_with_reconnect(
+                show_slot_command(slot), content=True, still_current=still_current
+            )
+        except Exception as err:  # noqa: BLE001 - reported as a failed action
             _LOGGER.error("Error showing slot %d: %s", slot, err)
             return False
+        if success:
+            _LOGGER.debug("Showing slot %d", slot)
+        else:
+            _LOGGER.error("Failed to show slot %d", slot)
+        return success
 
     async def delete_slot(self, slot: int) -> bool:
         """Erase one stored picture from the panel.
