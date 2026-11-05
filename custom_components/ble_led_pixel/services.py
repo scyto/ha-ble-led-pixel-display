@@ -18,6 +18,7 @@ mode, and the actions must keep working then.
 """
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 import voluptuous as vol
@@ -144,10 +145,22 @@ def _register_panel_action(
 
     async def handle(call: ServiceCall) -> dict[str, Any] | None:
         data = service.remove_entity_service_fields(call)
-        results: dict[str, Any] = {}
-        for entity in await _resolve_targets(hass, call):
+        targets = await _resolve_targets(hass, call)
+        for entity in targets:
             entity.async_set_context(call.context)
-            results[entity.entity_id] = await getattr(entity, func)(**data)
+        # Every panel is tried, as Home Assistant does: one that is offline
+        # must not keep the others from updating. The first failure is
+        # raised once all have finished.
+        outcomes = await asyncio.gather(
+            *(getattr(entity, func)(**data) for entity in targets),
+            return_exceptions=True,
+        )
+        for outcome in outcomes:
+            if isinstance(outcome, BaseException):
+                raise outcome
+        results = {
+            entity.entity_id: outcome for entity, outcome in zip(targets, outcomes)
+        }
         return results if call.return_response else None
 
     hass.services.async_register(

@@ -233,3 +233,20 @@ def test_naming_a_panel_the_user_cannot_control_is_refused(patched, monkeypatch)
     with pytest.raises(services.Unauthorized):
         asyncio.run(hass.services.handlers["show_slot"](call))
     assert theirs.calls == []
+
+
+def test_an_offline_panel_does_not_stop_the_others(patched):
+    class Offline(FakePanel):
+        async def async_show_slot(self, slot):
+            raise RuntimeError("offline")
+
+    first = Offline("text.a_offline")
+    second = FakePanel("text.b_online")
+    hass = make_hass(first, second)
+    services._register_panel_action(hass, "show_slot", schema={}, func="async_show_slot")
+
+    with pytest.raises(RuntimeError):
+        asyncio.run(hass.services.handlers["show_slot"](
+            make_call({"entity_id": ["text.a_offline", "text.b_online"], "slot": 5})
+        ))
+    assert second.calls == [5]
