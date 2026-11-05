@@ -187,7 +187,7 @@ class BleLedPixelAntialiasingSwitch(SwitchEntity, RestoreEntity):
         self._entry = entry
         self._address = address
         self._name = name
-        self._attr_name = "Image Antialiasing"
+        self._attr_name = "Text Image Only: Antialiasing"
         self._attr_unique_id = f"{address}_antialiasing"
         self._is_on = True  # Default to antialiasing enabled
 
@@ -245,7 +245,7 @@ class BleLedPixelAutoUpdateSwitch(SwitchEntity, RestoreEntity):
         self._entry = entry
         self._address = address
         self._name = name
-        self._attr_name = "Auto Update"
+        self._attr_name = "Text & Image: Auto Update"
         self._attr_unique_id = f"{address}_auto_update"
         self._is_on = False  # Default to manual updates only
 
@@ -305,7 +305,7 @@ class BleLedPixelClock24HSwitch(SwitchEntity, RestoreEntity):
         self._entry = entry
         self._address = address
         self._name = name
-        self._attr_name = "Clock 24h"
+        self._attr_name = "Clock: 24h"
         self._attr_unique_id = f"{address}_clock_24h"
         self._is_on = True  # Default to 24h format
 
@@ -385,7 +385,7 @@ class BleLedPixelClockShowDateSwitch(SwitchEntity, RestoreEntity):
         self._entry = entry
         self._address = address
         self._name = name
-        self._attr_name = "Clock Show Date"
+        self._attr_name = "Clock: Show Date"
         self._attr_unique_id = f"{address}_clock_show_date"
         self._is_on = True  # Default to showing date
 

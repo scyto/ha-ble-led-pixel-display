@@ -108,7 +108,7 @@ class BleLedPixelFontSize(NumberEntity, RestoreEntity):
         self._entry = entry
         self._address = address
         self._name = name
-        self._attr_name = "Image Font Size"
+        self._attr_name = "Text Image Only: Font Size"
         self._attr_unique_id = f"{address}_font_size"
         self._attr_native_value = 0.0  # 0 means auto-sizing
 
@@ -184,7 +184,7 @@ class BleLedPixelLineSpacing(NumberEntity, RestoreEntity):
         self._entry = entry
         self._address = address
         self._name = name
-        self._attr_name = "Image Line Spacing"
+        self._attr_name = "Text Image Only: Line Spacing"
         self._attr_unique_id = f"{address}_line_spacing"
         self._attr_native_value = 0  # Default to no extra spacing
         
@@ -328,7 +328,7 @@ class BleLedPixelTextSpeed(NumberEntity, RestoreEntity):
         self._entry = entry
         self._address = address
         self._name = name
-        self._attr_name = "Text Speed"
+        self._attr_name = "Text Only: Speed"
         self._attr_unique_id = f"{address}_text_speed"
         self._attr_native_value = 80  # Default speed
 

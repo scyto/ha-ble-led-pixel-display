@@ -179,7 +179,7 @@ names, so they stay numbered here.
 
 ### Choosing the text effect
 
-The panel animates text seven ways. Pick one with the **Text Effect** entity —
+The panel animates text seven ways. Pick one with the **Text Only: Effect** entity —
 Fixed, Scroll left, Scroll right, Blinking, Breathing, Snowflake or Laser — and
 it applies the next time the display refreshes.
 
@@ -192,7 +192,7 @@ off again if your panel misbehaves.
 
 ### Text gradients
 
-**Text Gradient** paints the text with one of eight colour ramps the panel
+**Text Only: Gradient** paints the text with one of eight colour ramps the panel
 renders itself, or leaves it in the colour set by the text colour light.
 
 The vendor app numbers these and nothing more — `GRADIENT_COLOR_01` to `_08` —
@@ -208,9 +208,9 @@ different places.
 
 | | Mode `textimage` | Mode `text` |
 | --- | --- | --- |
-| **Image Font Size** (`number`) | `0` means auto-fit; any value in 0.5 steps is honoured | Not used |
-| **Text Size** (`select`) | Not used | 16, 32, 48 or 64px, only the sizes that fit the panel (just 16 on a 20px panel; 16 and 32 on a 32px one) |
-| **Image Line Spacing** | Honoured, 0–20px | **No effect.** |
+| **Text Image Only: Font Size** (`number`) | `0` means auto-fit; any value in 0.5 steps is honoured | Not used |
+| **Text Only: Size** (`select`) | Not used | 16, 32, 48 or 64px, only the sizes that fit the panel (just 16 on a 20px panel; 16 and 32 on a 32px one) |
+| **Text Image Only: Line Spacing** | Honoured, 0–20px | **No effect.** |
 
 Image Font Size was called Font Size before 2.4 and kept its entity id. On the
 first start after upgrading, Text Size is set from it, so text mode looks the
@@ -257,19 +257,19 @@ Home Assistant usually discovers it by itself and offers it under **Settings →
 
 ## Entities you get
 
-Entity names start with the panel's name (for example *LED_BLE_7E9E1E82
-Message Font*), and the device page splits them into three sections. The
+Entity names start with the panel's name (for example *LED_BLE_7E9E1E82 Text
+& Image: Font*), and the device page splits them into three sections. The
 everyday controls sit at the top. The settings are under **Configuration**.
-Home Assistant gives integrations no separators or sub-groups there and
-sorts by name, so the names carry the grouping:
+Home Assistant gives integrations no separators or sub-groups there, so each
+setting's name says which mode it applies to:
 
 | Prefix | Applies to |
 | --- | --- |
-| `Clock` | `clock` mode |
-| `Image` | `textimage` mode only |
-| `Message` | how the message looks in both `text` and `textimage` |
-| `Slot` | stored slots |
-| `Text` | `text` mode only |
+| `Clock:` | `clock` mode |
+| `Slot:` | stored slots |
+| `Text & Image:` | both `text` and `textimage` mode |
+| `Text Image Only:` | `textimage` mode only |
+| `Text Only:` | `text` mode only |
 
 For real separators, use the [dashboard card](#a-dashboard-card-that-follows-the-mode)
 below. Settings in Configuration are also not offered to voice assistants by
@@ -289,25 +289,25 @@ default.
 
 | Entity | Domain | Used in | What it does |
 | --- | --- | --- | --- |
-| **Clock 24h**, **Clock Show Date** | `switch` | `clock` | Clock options |
-| **Clock Style** | `select` | `clock` | 9 clock faces |
-| **Clock Sync Time** | `button` | `clock` | Sets the device clock |
-| **Image Antialiasing** | `switch` | `textimage` | Smoothing |
-| **Image Font Size**, **Image Line Spacing** | `number` | `textimage` | Layout |
-| **Message Font** | `select` | `text`, `textimage` | TTF/OTF fonts, see [Fonts](#fonts) |
-| **Message Color**, **Message Background Color** | `light` | `text`, `textimage` | Colours as RGB |
-| **Text Size** | `select` | `text` | Character height |
-| **Text Effect**, **Text Gradient** | `select` | `text` | Scrolling, effects and colour ramps |
-| **Text Speed** | `number` | `text` | Effect speed |
-| **Auto Update** | `switch` | `text`, `textimage` | **Read [Avoiding flicker](#avoiding-flicker-how-updates-actually-work) before touching this** |
+| **Clock: 24h**, **Clock: Show Date** | `switch` | `clock` | Clock options |
+| **Clock: Style** | `select` | `clock` | 9 clock faces |
+| **Clock: Sync Time** | `button` | `clock` | Sets the device clock |
 | **Slot** | `number` | all | Slot 1–10 that the slot buttons below act on |
-| **Slot Save** | `button` | `text`, `textimage` | Sends the current message and keeps a copy in the chosen slot |
-| **Slot Show**, **Slot Clear** | `button` | all | Shows or erases the chosen slot. An empty slot makes the panel cycle through the filled ones, because the panel cannot report which slots are empty |
+| **Slot: Save** | `button` | `text`, `textimage` | Sends the current message and keeps a copy in the chosen slot |
+| **Slot: Show**, **Slot: Clear** | `button` | all | Shows or erases the chosen slot. An empty slot makes the panel cycle through the filled ones, because the panel cannot report which slots are empty |
+| **Text & Image: Font** | `select` | `text`, `textimage` | TTF/OTF fonts, see [Fonts](#fonts) |
+| **Text & Image: Color**, **Text & Image: Background Color** | `light` | `text`, `textimage` | Colours as RGB |
+| **Text & Image: Auto Update** | `switch` | `text`, `textimage` | **Read [Avoiding flicker](#avoiding-flicker-how-updates-actually-work) before touching this** |
+| **Text Image Only: Antialiasing** | `switch` | `textimage` | Smoothing |
+| **Text Image Only: Font Size**, **Text Image Only: Line Spacing** | `number` | `textimage` | Layout |
+| **Text Only: Size** | `select` | `text` | Character height |
+| **Text Only: Effect**, **Text Only: Gradient** | `select` | `text` | Scrolling, effects and colour ramps |
+| **Text Only: Speed** | `number` | `text` | Effect speed |
 
 **Diagnostic**: Device Type, Display Width, Display Height, firmware versions,
 Product ID, Brand, Supported features, Password protection.
 
-Panels set up before 2.4 keep their entity ids, so automations and dashboards
+Names changed again in 2.6.2 to carry the mode; entity ids never change on a rename. Panels set up before 2.4 keep their entity ids, so automations and dashboards
 keep working. Only the displayed names change: they gain the panel's name, and
 *Display*, *Font*, *Line Spacing*, *Antialiasing*, *Background Color* and
 *Sync Time* are now *Message*, *Text Font*, *Image Line Spacing*, *Image
@@ -395,9 +395,9 @@ cards:
 ```
 
 Entity ids are set when a panel is first added and later renames keep them.
-Panels added before 2.6.1 have `..._text_font`, `..._text_color` and
-`..._text_background_color`, as in the card above; panels added since get
-`..._message_font`, `..._message_color` and `..._message_background_color`.
+Panels added before 2.6.2 have `..._text_font`, `..._text_color` and
+`..._text_background_color`, as in the card above. Panels added since get ids
+built from the new names, so check yours on the entity's settings page.
 Panels that had 2.6.0 installed keep that release's slot button ids
 (`..._save_to_slot`, `..._show_slot`, `..._clear_slot`).
 
@@ -582,7 +582,7 @@ Four coloured quadrants — verifies resolution and colour channel order in one 
 
 ## Fonts
 
-Fonts are picked in the **Message Font** select entity and looked up in this order:
+Fonts are picked in the **Text & Image: Font** select entity and looked up in this order:
 
 1. `/config/fonts/` — your own fonts (create the folder if it does not exist)
 2. `custom_components/ble_led_pixel/fonts/` — shipped with the integration
