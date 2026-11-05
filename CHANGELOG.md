@@ -146,6 +146,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Message Color and Message Background Color, so the `Text` prefix means
   text mode only and `Image` means textimage only. Entity ids do not
   change.
+- **The README dashboard card follows the settings' scope**: settings for
+  both text modes first, then text mode only, textimage only, clock, and
+  slots.
 
 ## [2.6.0] - 2026-11-04
 

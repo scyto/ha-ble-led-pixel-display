@@ -336,18 +336,30 @@ cards:
     conditions:
       - condition: state
         entity: select.led_ble_7e9e1e82_mode
+        state:
+          - text
+          - textimage
+    card:
+      type: entities
+      title: Message (text and textimage)
+      entities:
+        - select.led_ble_7e9e1e82_text_font
+        - light.led_ble_7e9e1e82_text_color
+        - light.led_ble_7e9e1e82_text_background_color
+        - switch.led_ble_7e9e1e82_auto_update
+  - type: conditional
+    conditions:
+      - condition: state
+        entity: select.led_ble_7e9e1e82_mode
         state: text
     card:
       type: entities
-      title: Text
+      title: Text mode
       entities:
-        - select.led_ble_7e9e1e82_text_font
         - select.led_ble_7e9e1e82_text_size
         - select.led_ble_7e9e1e82_text_effect
         - number.led_ble_7e9e1e82_text_speed
         - select.led_ble_7e9e1e82_text_gradient
-        - light.led_ble_7e9e1e82_text_color
-        - light.led_ble_7e9e1e82_text_background_color
   - type: conditional
     conditions:
       - condition: state
@@ -355,14 +367,11 @@ cards:
         state: textimage
     card:
       type: entities
-      title: Text image
+      title: Textimage mode
       entities:
-        - select.led_ble_7e9e1e82_text_font
         - number.led_ble_7e9e1e82_image_font_size
         - number.led_ble_7e9e1e82_image_line_spacing
         - switch.led_ble_7e9e1e82_image_antialiasing
-        - light.led_ble_7e9e1e82_text_color
-        - light.led_ble_7e9e1e82_text_background_color
   - type: conditional
     conditions:
       - condition: state
